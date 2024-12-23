@@ -96,7 +96,7 @@ push:
 req:
 	@printf "$(OK_COLOR)==== Install python requirements ====$(NO_COLOR)\n"
 	@if [ -d "${VENV}" ]; then \
-		$(PIP) install -r ../requirements.txt; \
+		$(PIP) install -r requirements.txt; \
 	else \
 		echo "Environment is absent"; \
 		echo "In first run the command:"; \
