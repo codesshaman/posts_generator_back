@@ -24,6 +24,8 @@ Change file:
 
 ``nano .env``
 
+Change debug, database options and settings.
+
 Set your git login and email and launch:
 
 ``make git``

@@ -79,10 +79,20 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+DATABASE_NAME = os.getenv('DATABASE_NAME', 'djangopostsgen')
+DATABASE_USER = os.getenv('DATABASE_USER', 'djangopguser')
+DATABASE_PASS = os.getenv('DATABASE_PASS', 'changeme!')
+DATABASE_HOST = os.getenv('DATABASE_HOST', '127.0.0.1')
+DATABASE_PORT = os.getenv('DATABASE_PORT', '5432')
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': DATABASE_NAME,
+        'USER': DATABASE_USER,
+        'PASSWORD': DATABASE_PASS,
+        'HOST': DATABASE_HOST,
+        'PORT': DATABASE_PORT
     }
 }
 
