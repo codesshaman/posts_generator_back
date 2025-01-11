@@ -34,9 +34,11 @@ app:
 env:
 	@printf "$(ERROR_COLOR)==== Create environment file for ${name}... ====$(NO_COLOR)\n"
 	@if [ -f .env ]; then \
-		rm .env; \
-	fi; \
-	cp .env.example .env
+		echo "$(ERROR_COLOR).env file already exists!$(NO_COLOR)"; \
+	else \
+		cp .env.example .env; \
+		echo "$(GREEN).env file successfully created!$(NO_COLOR)"; \
+	fi
 
 freeze:
 	@$(PIP) freeze
