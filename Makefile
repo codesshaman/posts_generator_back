@@ -90,6 +90,7 @@ make:
 
 migrate:
 	@printf "$(OK_COLOR)==== Launch configuration ${name} ====$(NO_COLOR)\n"
+	$(PYTHON) manage.py makemigrations
 	$(PYTHON) manage.py migrate
 
 push:

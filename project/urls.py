@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from .views import ItemAPIView
 
 urlpatterns = [
+    path('api/items/', ItemAPIView.as_view(), name='item-list'),
     path('admin/', admin.site.urls)
 ]
