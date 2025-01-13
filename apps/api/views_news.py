@@ -1,7 +1,17 @@
-from rest_framework import viewsets
+from rest_framework.viewsets import ModelViewSet
+from .serializer_news import NewSerializer
+from rest_framework import generics
 from .models import New
-from .serializer_news import NewsSerializer
 
-class NewsViewSet(viewsets.ModelViewSet):
-    queryset = New.objects.all().order_by('-created_at')  # Сортировка по дате создания
-    serializer_class = NewsSerializer
+
+class NewListCreateView(generics.ListCreateAPIView):
+    queryset = New.objects.all()
+    serializer_class = NewSerializer
+
+class NewDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = New.objects.all()
+    serializer_class = NewSerializer
+
+class NewViewSet(ModelViewSet):
+    queryset = New.objects.all()
+    serializer_class = NewSerializer

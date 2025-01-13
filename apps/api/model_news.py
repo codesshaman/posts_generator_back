@@ -8,5 +8,8 @@ class New(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # Дата создания
     updated_at = models.DateTimeField(auto_now=True)      # Дата изменения
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return self.title

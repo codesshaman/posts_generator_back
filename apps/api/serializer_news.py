@@ -1,7 +1,14 @@
 from rest_framework import serializers
 from .models import New
 
-class NewsSerializer(serializers.ModelSerializer):
+class NewSerializer(serializers.ModelSerializer):
     class Meta:
         model = New
-        fields = '__all__'  # Все поля модели
+        fields = ['id',
+                  'title',
+                  'description',
+                  'image_url',
+                  'content',
+                  'created_at',
+                  'updated_at'
+                  ]
