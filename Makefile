@@ -64,6 +64,7 @@ help:
 	@echo -e "$(WARN_COLOR)- make req				: Install pip requirements"
 	@echo -e "$(WARN_COLOR)- make root				: Create superuser"
 	@echo -e "$(WARN_COLOR)- make static				: Collect static"
+	@echo -e "$(WARN_COLOR)- make su				: Create admin"
 	@echo -e "$(WARN_COLOR)- make venv				: Create virtual environment"
 	@echo -e "$(WARN_COLOR)- make vexit				: Exit from virtual environment"
 	@echo -e "$(WARN_COLOR)- make clean				: Remove python cache"
@@ -117,6 +118,10 @@ run:
 static:
 	@printf "$(OK_COLOR)==== Collect static ${name} ====$(NO_COLOR)\n"
 	$(PYTHON) manage.py collectstatic
+
+su:
+	@printf "$(OK_COLOR)==== Collect static ${name} ====$(NO_COLOR)\n"
+	$(PYTHON) manage.py createsuperuser
 
 venv:
 	@printf "$(OK_COLOR)==== Launch virtual environment for ${name} ====$(NO_COLOR)\n"
