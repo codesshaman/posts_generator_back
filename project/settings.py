@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'apps.api.apps.ApiConfig',
-    'apps.website_login.apps.WebsiteLoginConfig'
 ]
 
 REST_FRAMEWORK = {
