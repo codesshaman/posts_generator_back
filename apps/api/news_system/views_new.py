@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
-from .serializer_news import NewSerializer
+from .serializer_new import NewSerializer
 from rest_framework import generics
-from .models import New
+from .model_new import New
 
 
 class NewListCreateView(generics.ListCreateAPIView):
