@@ -1,39 +1,40 @@
+from .serializer_user import UserSerializer, LoginSerializer, UserRegistrationSerializer
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
+from project.models import User
 
-from django.contrib.auth import authenticate
-
-from .model_user import User
-from .serializer_user import UserSerializer, LoginSerializer, RegisterSerializer
 
 # Регистрация нового пользователя
-class RegisterView(generics.CreateAPIView):
+class UserRegistrationView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = RegisterSerializer
-    permission_classes = [permissions.AllowAny]
+    serializer_class = UserRegistrationSerializer
+    permission_classes = [permissions.AllowAny]  # Доступно всем
 
-# Авторизация пользователя
-class LoginView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        serializer = LoginSerializer(data=request.data)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = authenticate(
-            login=serializer.validated_data['login'],
-            password=serializer.validated_data['password']
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            {"message": "User created successfully", "user": serializer.data},
+            status=status.HTTP_201_CREATED,
+            headers=headers
         )
-        if user:
-            token, _ = Token.objects.get_or_create(user=user)
-            return Response({"token": token.key}, status=status.HTTP_200_OK)
-        return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
-# Получение информации о текущем пользователе
+
+# Представление для просмотра/обновления текущего пользователя
 class UserDetailView(generics.RetrieveUpdateAPIView):
+    queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]  # Только для аутентифицированных пользователей
 
     def get_object(self):
-        return self.request.user
+        return self.request.user  # Возвращаем текущего пользователя
+
+
+# Представление для списка пользователей (административный доступ)
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAdminUser]  # Доступ только для администратора
+

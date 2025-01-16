@@ -1,31 +1,49 @@
 from rest_framework import serializers
-from .model_user import User
+from project.models import User
+
 
 # Сериализатор для модели пользователя
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'referrer', 'login', 'email', 'name', 'surname', 'is_active']
+        fields = [
+            'id',
+            'login',
+            'email',
+            'name',
+            'surname',
+            'referrer',
+            'is_active',
+            'is_staff',
+            'date_joined',
+        ]
+        read_only_fields = ['id', 'date_joined']
+
 
 # Сериализатор для регистрации
-class RegisterSerializer(serializers.ModelSerializer):
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=8, style={'input_type': 'password'})
+    confirm_password = serializers.CharField(write_only=True, min_length=8, style={'input_type': 'password'})
+
     class Meta:
         model = User
-        fields = ['referrer', 'login', 'password', 'email', 'name', 'surname']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
+        fields = ['login', 'email', 'password', 'confirm_password', 'name', 'surname']
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['confirm_password']:
+            raise serializers.ValidationError({"password": "Passwords do not match."})
+        return attrs
 
     def create(self, validated_data):
-        user = User.objects.create_user(
+        validated_data.pop('confirm_password')  # Убираем подтверждение пароля
+        return User.objects.create_user(
             login=validated_data['login'],
-            password=validated_data['password'],
             email=validated_data['email'],
-            referrer=validated_data.get('referrer', 0),
+            password=validated_data['password'],
             name=validated_data.get('name', ''),
             surname=validated_data.get('surname', ''),
         )
-        return user
+
 
 # Сериализатор для логина
 class LoginSerializer(serializers.Serializer):
