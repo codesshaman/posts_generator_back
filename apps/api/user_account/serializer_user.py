@@ -1,6 +1,8 @@
+from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from project.models import User
-
+# from project.models import User
+User = get_user_model()
 
 # Сериализатор для модели пользователя
 class UserSerializer(serializers.ModelSerializer):
@@ -23,27 +25,33 @@ class UserSerializer(serializers.ModelSerializer):
 # Сериализатор для регистрации
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8, style={'input_type': 'password'})
-    confirm_password = serializers.CharField(write_only=True, min_length=8, style={'input_type': 'password'})
+    password_confirm = serializers.CharField(write_only=True, min_length=8, style={'input_type': 'password'})
 
     class Meta:
         model = User
-        fields = ['login', 'email', 'password', 'confirm_password', 'name', 'surname']
+        fields = ['login', 'email', 'name', 'surname', 'referrer', 'password', 'password_confirm']
 
-    def validate(self, attrs):
-        if attrs['password'] != attrs['confirm_password']:
-            raise serializers.ValidationError({"password": "Passwords do not match."})
-        return attrs
+    def validate(self, data):
+        # Проверка совпадения паролей
+        if data['password'] != data['password_confirm']:
+            raise serializers.ValidationError({'password_confirm': "Passwords do not match."})
+        return data
 
     def create(self, validated_data):
-        validated_data.pop('confirm_password')  # Убираем подтверждение пароля
-        return User.objects.create_user(
-            login=validated_data['login'],
-            email=validated_data['email'],
-            password=validated_data['password'],
-            name=validated_data.get('name', ''),
-            surname=validated_data.get('surname', ''),
-        )
-
+        validated_data.pop('password_confirm')  # Удаляем поле подтверждения пароля
+        try:
+            return User.objects.create_user(
+                login=validated_data['login'],
+                email=validated_data['email'],
+                name=validated_data.get('name', ''),
+                surname=validated_data.get('surname', ''),
+                referrer=validated_data.get('referrer', None),
+                password=validated_data['password']
+            )
+        except ValidationError as e:
+            raise serializers.ValidationError({'detail': str(e)})
+        except Exception as e:
+            raise serializers.ValidationError({'detail': "An unexpected error occurred: " + str(e)})
 
 # Сериализатор для логина
 class LoginSerializer(serializers.Serializer):
