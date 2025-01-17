@@ -3,12 +3,6 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.timezone import now
 from django.db import models
 
-class Item(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-
-class Meta:
-    db_table = 'project_item'
 
 class UserManager(BaseUserManager):
     def create_user(self, login, email, password=None, **extra_fields):

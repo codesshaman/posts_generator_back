@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 from dotenv import load_dotenv
+from datetime import timedelta
 from pathlib import Path
 import os, sys
 
@@ -64,6 +65,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # Время жизни access-токена
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # Время жизни refresh-токена
+    'ROTATE_REFRESH_TOKENS': False,                 # Не обновлять refresh-токен при каждом запросе
+    'BLACKLIST_AFTER_ROTATION': True,               # Аннулировать старый refresh-токен при обновлении
 }
 
 MIDDLEWARE = [

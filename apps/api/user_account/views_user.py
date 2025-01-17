@@ -15,6 +15,16 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):  # Только для чте�
     permission_classes = [permissions.IsAdminUser]  # Доступ только для администратора
 
 
+# Представление для просмотра только текущего залогиненного пользователя
+class UserDetailView(generics.RetrieveUpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Только для аутентифицированных пользователей
+
+    def get_object(self):
+        return self.request.user  # Возвращаем текущего пользователя
+
+
 # Регистрация нового пользователя
 # Общедоступный метод
 class UserRegistrationAPIView(views.APIView):
@@ -28,15 +38,7 @@ class UserRegistrationAPIView(views.APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Представление для просмотра/обновления текущего пользователя
-class UserDetailView(generics.RetrieveUpdateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]  # Только для аутентифицированных пользователей
-
-    def get_object(self):
-        return self.request.user  # Возвращаем текущего пользователя
-
+# Представление для просмотра/изменения пользователя по токену
 class UserDetailAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -75,6 +77,12 @@ class UserDetailAPIView(APIView):
         if request.user.id != user_id:
             return Response(
                 {"detail": "Доступ запрещён. Вы можете изменять только свои данные."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        # Проверка на попытку изменить is_staff
+        if 'is_staff' in request.data and not request.user.is_staff:
+            return Response(
+                {"detail": "Вы не имеете прав на изменение поля is_staff."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
