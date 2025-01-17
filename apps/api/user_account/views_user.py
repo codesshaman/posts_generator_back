@@ -62,6 +62,13 @@ class UserDetailAPIView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # Проверка на попытку изменить is_staff
+        if 'is_staff' in request.data and not request.user.is_staff:
+            return Response(
+                {"detail": "Обратитесь к администратору за дополнительными правами."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         user = get_object_or_404(User, id=user_id)
 
         # Сериализатор для частичного обновления данных пользователя
@@ -77,12 +84,6 @@ class UserDetailAPIView(APIView):
         if request.user.id != user_id:
             return Response(
                 {"detail": "Доступ запрещён. Вы можете изменять только свои данные."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        # Проверка на попытку изменить is_staff
-        if 'is_staff' in request.data and not request.user.is_staff:
-            return Response(
-                {"detail": "Вы не имеете прав на изменение поля is_staff."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 

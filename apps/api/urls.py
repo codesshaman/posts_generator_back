@@ -64,3 +64,8 @@ urlpatterns = [
 ### "changet_field2": "changed_value2"
 ### }
 #############################################
+### Get user data for authorizen user
+### GET: http://127.0.0.1:8000/api/users/<user_id>/
+### Content-Type: application/json
+### Authorization: Bearer <refresh_token>
+#############################################
