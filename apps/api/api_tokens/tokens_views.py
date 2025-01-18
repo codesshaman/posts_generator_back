@@ -1,9 +1,9 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveDestroyAPIView
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
-from .serializer_token import UserTokenSerializer
+from .tokens_serializer import UserTokenSerializer
 from django.db import IntegrityError
-from .model_token import UserToken
+from .tokens_model import UserToken
 
 
 class UserTokenListCreateAPIView(ListCreateAPIView):

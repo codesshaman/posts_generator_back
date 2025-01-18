@@ -1,4 +1,4 @@
-from .serializer_user import UserSerializer, UserRegistrationSerializer
+from .user_serializer import UserSerializer, UserRegistrationSerializer
 from rest_framework import generics, permissions, status, viewsets, views
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny

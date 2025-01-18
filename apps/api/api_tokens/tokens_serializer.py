@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils.timezone import now, timedelta
-from .model_token import UserToken
+from .tokens_model import UserToken
 
 class UserTokenSerializer(serializers.ModelSerializer):
     expires_in_days = serializers.IntegerField(

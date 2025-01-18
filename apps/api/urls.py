@@ -1,7 +1,7 @@
-from .user_account.views_user import UserDetailAPIView, UserViewSet, UserRegistrationAPIView, UserDetailView
-from .api_tokens.views_token import UserTokenListCreateAPIView, UserTokenRetrieveDestroyAPIView
+from .user_account.user_views import UserDetailAPIView, UserViewSet, UserRegistrationAPIView, UserDetailView
+from .api_tokens.tokens_views import UserTokenListCreateAPIView, UserTokenRetrieveDestroyAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .news_system.views_new import NewListCreateView, NewDetailView, NewViewSet
+from .news_system.news_views import NewListCreateView, NewDetailView, NewViewSet
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 
@@ -30,7 +30,6 @@ urlpatterns = [
     # # Маршруты для получения / обновления пользовательских токенов
     path('tokens/', UserTokenListCreateAPIView.as_view(), name='user-token-list'),
     path('tokens/<int:pk>/', UserTokenRetrieveDestroyAPIView.as_view(), name='user-token-detail'),
-
 ]
 
 
@@ -80,6 +79,11 @@ urlpatterns = [
 ### Content-Type: application/json
 ### Authorization: Bearer <refresh_token>
 #############################################
+### View user tokens list for authorizen user
+### GET: http://127.0.0.1:8000/api/tokens/<token_id>/
+### Content-Type: application/json
+### Authorization: Bearer <refresh_token>
+#############################################
 ### Create new token for authorizen user
 ### POST: http://127.0.0.1:8000/api/tokens/<user_id>/
 ### Content-Type: application/json
@@ -88,4 +92,9 @@ urlpatterns = [
 ### "name": "My New Token",
 ### "expires_in_days": 90
 ### }
+#############################################
+### Remove user tokens by id for authorizen user
+### DELETE: http://127.0.0.1:8000/api/tokens/<token_id>/
+### Content-Type: application/json
+### Authorization: Bearer <refresh_token>
 #############################################

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .model_new import New
+from .news_model import New
 
 
 class NewSerializer(serializers.ModelSerializer):
