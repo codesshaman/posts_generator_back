@@ -1,4 +1,5 @@
 from .user_account.views_user import UserDetailAPIView, UserViewSet, UserRegistrationAPIView, UserDetailView
+from .api_tokens.views_token import UserTokenListCreateAPIView, UserTokenRetrieveDestroyAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .news_system.views_new import NewListCreateView, NewDetailView, NewViewSet
 from rest_framework.routers import DefaultRouter
@@ -25,6 +26,11 @@ urlpatterns = [
     # # Маршруты для получения / обновления JWT-токенов
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # # Маршруты для получения / обновления пользовательских токенов
+    path('tokens/', UserTokenListCreateAPIView.as_view(), name='user-token-list'),
+    path('tokens/<int:pk>/', UserTokenRetrieveDestroyAPIView.as_view(), name='user-token-detail'),
+
 ]
 
 
@@ -68,4 +74,18 @@ urlpatterns = [
 ### GET: http://127.0.0.1:8000/api/users/<user_id>/
 ### Content-Type: application/json
 ### Authorization: Bearer <refresh_token>
+#############################################
+### Get user tokens list for authorizen user
+### GET: http://127.0.0.1:8000/api/tokens/
+### Content-Type: application/json
+### Authorization: Bearer <refresh_token>
+#############################################
+### Create new token for authorizen user
+### POST: http://127.0.0.1:8000/api/tokens/<user_id>/
+### Content-Type: application/json
+### Authorization: Bearer <refresh_token>
+### json: {
+### "name": "My New Token",
+### "expires_in_days": 90
+### }
 #############################################

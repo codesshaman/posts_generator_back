@@ -1,10 +1,14 @@
+from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import User  # Используем стандартную модель пользователя
 from django.utils.timezone import now, timedelta
 
 
 class UserToken(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tokens")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # Используем кастомную модель пользователя
+        on_delete=models.CASCADE,
+        related_name="tokens"
+    )
     name = models.CharField(max_length=255, verbose_name="Название токена")
     token = models.TextField(verbose_name="Токен")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
