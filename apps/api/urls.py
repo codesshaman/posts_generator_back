@@ -1,4 +1,5 @@
 from .user_account.user_views import UserDetailAPIView, UserViewSet, UserRegistrationAPIView, UserDetailView
+from .payment_account.payment_views import PaymentAccountViewSet, RefillViewSet, DeductionViewSet
 from .api_tokens.tokens_views import UserTokenListCreateAPIView, UserTokenRetrieveDestroyAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .news_system.news_views import NewListCreateView, NewDetailView, NewViewSet
@@ -30,6 +31,19 @@ urlpatterns = [
     # # Маршруты для получения / обновления пользовательских токенов
     path('tokens/', UserTokenListCreateAPIView.as_view(), name='user-token-list'),
     path('tokens/<int:pk>/', UserTokenRetrieveDestroyAPIView.as_view(), name='user-token-detail'),
+
+    # Платёжные аккаунты
+    path('payments/', PaymentAccountViewSet.as_view({'get': 'list', 'post': 'create'}), name='payment_account-list'),
+    path('payments/<int:pk>/', PaymentAccountViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='payment_account-detail'),
+
+    # Пополнения для конкретного аккаунта
+    path('payments/<int:account_id>/refills/', RefillViewSet.as_view({'get': 'list', 'post': 'create'}), name='refill-list'),
+    path('payments/<int:account_id>/refills/<int:pk>/', RefillViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='refill-detail'),
+
+    # Списания для конкретного аккаунта
+    path('payments/<int:account_id>/deductions/', DeductionViewSet.as_view({'get': 'list', 'post': 'create'}), name='deduction-list'),
+    path('payments/<int:account_id>/deductions/<int:pk>/', DeductionViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='deduction-detail'),
+
 ]
 
 
@@ -98,3 +112,17 @@ urlpatterns = [
 ### Content-Type: application/json
 ### Authorization: Bearer <refresh_token>
 #############################################
+### Create payment account with first payment
+### POST: http://127.0.0.1:8000/api/payments/
+### Content-Type: application/json
+### Authorization: Bearer <refresh_token>
+### json: {
+### "balance": <sum>,
+### "currency": "RUB",
+### "status": "active" ("frozen" if "balance": 0)
+### }
+#############################################
+### View payment account for authorizen user
+### GET: http://127.0.0.1:8000/api/payments/
+### Content-Type: application/json
+### Authorization: Bearer <refresh_token>

@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .news_system.news_admin import NewAdmin
-from .user_account.user_admin import UserAdmin
-from .api_tokens.tokens_admin import UserTokenAdmin
+from .news_system.news_forms import NewAdmin
+from .user_account.user_forms import UserAdmin
+from .api_tokens.tokens_forms import UserTokenAdmin
 # from project.models import User
 #
 # @admin.register(User)
