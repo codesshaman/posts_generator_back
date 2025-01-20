@@ -74,31 +74,31 @@ urlpatterns = [
 ### "refresh": "refresh_token"
 ### }
 #############################################
-### Viewing and changind user data
+### Viewing and changing user data
 ### PATCH: http://127.0.0.1:8000/api/user/<user_id>/
 ### Content-Type: application/json
 ### Authorization: Bearer <refresh_token>
 ### json: {
-### "changet_field": "changed_value",
-### "changet_field2": "changed_value2"
+### "changed_field": "changed_value",
+### "changed_field2": "changed_value2"
 ### }
 #############################################
-### Get user data for authorizen user
+### Get user data for authorized user
 ### GET: http://127.0.0.1:8000/api/users/<user_id>/
 ### Content-Type: application/json
 ### Authorization: Bearer <refresh_token>
 #############################################
-### Get user tokens list for authorizen user
+### Get user tokens list for authorized user
 ### GET: http://127.0.0.1:8000/api/tokens/
 ### Content-Type: application/json
 ### Authorization: Bearer <refresh_token>
 #############################################
-### View user tokens list for authorizen user
+### View user tokens list for authorized user
 ### GET: http://127.0.0.1:8000/api/tokens/<token_id>/
 ### Content-Type: application/json
 ### Authorization: Bearer <refresh_token>
 #############################################
-### Create new token for authorizen user
+### Create new token for authorized user
 ### POST: http://127.0.0.1:8000/api/tokens/<user_id>/
 ### Content-Type: application/json
 ### Authorization: Bearer <refresh_token>
@@ -107,7 +107,7 @@ urlpatterns = [
 ### "expires_in_days": 90
 ### }
 #############################################
-### Remove user tokens by id for authorizen user
+### Remove user tokens by id for authorized user
 ### DELETE: http://127.0.0.1:8000/api/tokens/<token_id>/
 ### Content-Type: application/json
 ### Authorization: Bearer <refresh_token>
@@ -122,7 +122,25 @@ urlpatterns = [
 ### "status": "active" ("frozen" if "balance": 0)
 ### }
 #############################################
-### View payment account for authorizen user
+### View payment account for authorized user
 ### GET: http://127.0.0.1:8000/api/payments/
+### Content-Type: application/json
+### Authorization: Bearer <refresh_token>
+#############################################
+### View all refills for authorized user
+### GET: http://127.0.0.1:8000/api/payments/<payment_account_id>/refills/
+### Content-Type: application/json
+### Authorization: Bearer <refresh_token>
+#############################################
+### Create refill payment for authorized user
+### POST: http://127.0.0.1:8000/api/payments/<payment_account_id>/refills/
+### Content-Type: application/json
+### Authorization: Bearer <refresh_token>
+### json: {
+### "amount": <sum>
+### }
+#############################################
+### View refills by refill id for authorized user
+### GET: http://127.0.0.1:8000/api/payments/<payment_account_id>/refills/<payment_id>/
 ### Content-Type: application/json
 ### Authorization: Bearer <refresh_token>

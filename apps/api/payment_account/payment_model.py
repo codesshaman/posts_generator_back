@@ -6,7 +6,7 @@ from django.db import models
 class PaymentAccount(models.Model):
     account_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    balance = models.IntegerField()
+    balance = models.DecimalField(max_digits=20, decimal_places=6, default=0.000000)
     currency = models.CharField(max_length=3)
     status = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -18,7 +18,7 @@ class PaymentAccount(models.Model):
 class Refill(models.Model):
     refill_id = models.AutoField(primary_key=True)
     account = models.ForeignKey(PaymentAccount, on_delete=models.CASCADE, related_name="refills")
-    amount = models.IntegerField()
+    amount = models.DecimalField(max_digits=20, decimal_places=6)
     refill_time = models.DateTimeField(default=timezone.now, editable=False)  # Не редактируемое поле
 
     def __str__(self):
@@ -27,7 +27,7 @@ class Refill(models.Model):
 class Deduction(models.Model):
     deduction_id = models.AutoField(primary_key=True)
     account = models.ForeignKey(PaymentAccount, on_delete=models.CASCADE, related_name="deductions")
-    amount = models.IntegerField()
+    amount = models.DecimalField(max_digits=20, decimal_places=6)
     deduction_time = models.DateTimeField(default=timezone.now, editable=False)  # Не редактируемое поле
 
     def __str__(self):
