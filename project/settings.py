@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'apps.api.apps.ApiConfig',
+    'apps.mail.apps.MailConfig',
 ]
 
 REST_FRAMEWORK = {

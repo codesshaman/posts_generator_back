@@ -1,7 +1,7 @@
+from apps.mail.acc_activation.activation_mail_sendler import send_activation_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-# from project.models import User
 User = get_user_model()
 
 # Сериализатор для модели пользователя
@@ -40,7 +40,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password_confirm')  # Удаляем поле подтверждения пароля
         try:
-            return User.objects.create_user(
+            user = User.objects.create_user(
                 login=validated_data['login'],
                 email=validated_data['email'],
                 name=validated_data.get('name', ''),
@@ -48,6 +48,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 referrer=validated_data.get('referrer', None),
                 password=validated_data['password']
             )
+            # Отправка письма с активацией
+            send_activation_email(user, self.context['request'])
+
+            return user
+
         except ValidationError as e:
             raise serializers.ValidationError({'detail': str(e)})
         except Exception as e:

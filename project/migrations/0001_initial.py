@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(blank=True, max_length=150)),
                 ('surname', models.CharField(blank=True, max_length=150)),
                 ('referrer', models.IntegerField(blank=True, default=0, null=True)),
-                ('is_active', models.BooleanField(default=True)),
+                ('is_active', models.BooleanField(default=False)),
                 ('is_staff', models.BooleanField(default=False)),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
                 ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='custom_user_groups', to='auth.group', verbose_name='groups')),
