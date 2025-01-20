@@ -82,14 +82,39 @@ class RefillViewSet(
         serializer.save(account=account)
 
 
-class DeductionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+class DeductionViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin
+):
     queryset = Deduction.objects.all()
     serializer_class = DeductionSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
+        """
+        Проверяет баланс и выполняет списание, если достаточно средств.
+        """
+        # Получаем аккаунт
         account = PaymentAccount.objects.get(account_id=self.kwargs['account_id'])
+        deduction_amount = serializer.validated_data['amount']
+
+        # Проверяем, достаточно ли средств на балансе
+        if account.balance < deduction_amount:
+            raise ValidationError(
+                f"Недостаточно средств на счёте. Текущий баланс: {account.balance}, сумма списания: {deduction_amount}"
+            )
+
+        # Уменьшаем баланс
+        account.balance -= deduction_amount
+        account.save()
+
+        # Сохраняем объект списания
         serializer.save(account=account)
+
 
 # ##from .payment_forms import PaymentAccountForm, RefillForm, DeductionForm
 # from django.shortcuts import render, get_object_or_404, redirect

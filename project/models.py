@@ -29,7 +29,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=150, blank=True)
     surname = models.CharField(max_length=150, blank=True)
     referrer = models.IntegerField(default=0, blank=True, null=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=now, verbose_name=_("date joined"))
 
