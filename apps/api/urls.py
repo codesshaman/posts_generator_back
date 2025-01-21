@@ -1,8 +1,9 @@
+from .payment_account.payment_views import PaymentAccountViewSet, RefillViewSet, DeductionViewSet, PositiveBalanceAccountsView
 from .user_account.user_views import UserDetailAPIView, UserViewSet, UserRegistrationAPIView, UserDetailView
-from .payment_account.payment_views import PaymentAccountViewSet, RefillViewSet, DeductionViewSet
 from .api_tokens.tokens_views import UserTokenListCreateAPIView, UserTokenRetrieveDestroyAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .news_system.news_views import NewListCreateView, NewDetailView, NewViewSet
+from apps.mail.acc_activation.activation_view import activate_account
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 
@@ -44,6 +45,11 @@ urlpatterns = [
     path('payments/<int:account_id>/deductions/', DeductionViewSet.as_view({'get': 'list', 'post': 'create'}), name='deduction-list'),
     path('payments/<int:account_id>/deductions/<int:pk>/', DeductionViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='deduction-detail'),
 
+    # Просмотр всех пополненных счетов (только для админов)
+    path('positive-balance-accounts/', PositiveBalanceAccountsView.as_view(), name='positive-balance-accounts'),
+
+    # Активация аккаунта по email
+    path('activate/<str:uidb64>/<str:token>/', activate_account, name='activate-account'),
 ]
 
 
@@ -119,6 +125,11 @@ urlpatterns = [
 ### Authorization: Bearer <refresh_token>
 #############################################
 ################# PAYMENTS ##################
+#############################################
+### View all not empty accounts for administrators
+### GET: http://127.0.0.1:8000/api/positive-balance-accounts/
+### Content-Type: application/json
+### Authorization: Bearer <admin_refresh_token>
 #############################################
 ### Create payment account with first payment
 ### POST: http://127.0.0.1:8000/api/payments/

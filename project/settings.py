@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 from datetime import timedelta
 from pathlib import Path
@@ -16,6 +17,13 @@ import os, sys
 
 # Загружаем .env файл
 load_dotenv()
+
+def get_env_variable(var_name, default=None):
+    """Получить значение переменной окружения или вернуть default, если она отсутствует"""
+    value = os.getenv(var_name, default)
+    if value is None:
+        raise ImproperlyConfigured(f"Переменная окружения {var_name} не задана.")
+    return value
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -126,6 +134,23 @@ DATABASES = {
         'PORT': DATABASE_PORT
     }
 }
+
+# Читаем USE_MAIL из .env
+USE_MAIL = os.getenv('USE_MAIL', 'False').lower() in ['true', '1', 'yes']
+
+
+if USE_MAIL:
+    # Если USE_MAIL=True, настраиваем SMTP
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = get_env_variable('EMAIL_HOST')
+    EMAIL_PORT = int(get_env_variable('EMAIL_PORT'))
+    EMAIL_USE_TLS = get_env_variable('EMAIL_USE_TLS', 'True').lower() in ['true', '1', 'yes']
+    EMAIL_HOST_USER = get_env_variable('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = get_env_variable('EMAIL_HOST_PASSWORD')
+    DEFAULT_FROM_EMAIL = get_env_variable('DEFAULT_FROM_EMAIL')
+else:
+    # Если USE_MAIL=False, используем вывод в консоль
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

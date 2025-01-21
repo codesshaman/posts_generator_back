@@ -52,6 +52,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name=_("user permissions"),
     )
 
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.is_active = True  # Устанавливаем is_active в True для суперпользователей
+        super().save(*args, **kwargs)
+
     objects = UserManager()
 
     USERNAME_FIELD = 'login'

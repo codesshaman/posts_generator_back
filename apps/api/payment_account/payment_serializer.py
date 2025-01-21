@@ -15,3 +15,8 @@ class DeductionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deduction
         fields = ['deduction_id', 'account_id', 'amount', 'deduction_time']
+
+class PositiveBalanceAccountsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentAccount
+        fields = ['account_id', 'user_id', 'balance', 'currency', 'status', 'created_at', 'updated_at']

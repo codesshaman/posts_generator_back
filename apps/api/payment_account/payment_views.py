@@ -1,10 +1,12 @@
-from .payment_serializer import PaymentAccountSerializer, RefillSerializer, DeductionSerializer
+from .payment_serializer import PaymentAccountSerializer, RefillSerializer, DeductionSerializer, PositiveBalanceAccountsSerializer
 from .payment_model import PaymentAccount, Refill, Deduction
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins
+from rest_framework.views import APIView
 
 
 class PaymentAccountViewSet(
@@ -114,3 +116,20 @@ class DeductionViewSet(
 
         # Сохраняем объект списания
         serializer.save(account=account)
+
+
+class PositiveBalanceAccountsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        """
+        Возвращает список платёжных аккаунтов с положительным балансом.
+        Доступно только для пользователей is_staff.
+        """
+        if not request.user.is_staff:
+            raise PermissionDenied("Доступ разрешён только администраторам.")
+
+        # Фильтруем аккаунты с положительным балансом
+        accounts = PaymentAccount.objects.filter(balance__gt=0)
+        serializer = PositiveBalanceAccountsSerializer(accounts, many=True)
+        return Response(serializer.data)

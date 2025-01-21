@@ -29,11 +29,16 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
 # Общедоступный метод
 class UserRegistrationAPIView(views.APIView):
     permission_classes = [AllowAny]  # Разрешает доступ без аутентификации
+
     def post(self, request, *args, **kwargs):
-        serializer = UserRegistrationSerializer(data=request.data)
+        # Передаем context с request в сериализатор
+        serializer = UserRegistrationSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "User registered successfully."}, status=status.HTTP_201_CREATED)
+            serializer.save()  # Вызов метода create в сериализаторе
+            return Response(
+                {"message": "User registered successfully. Please check your email for the activation link."},
+                status=status.HTTP_201_CREATED,
+            )
         # Возвращаем ошибки валидации
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
