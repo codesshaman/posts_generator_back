@@ -1,6 +1,7 @@
 from .payment_account.payment_views import PaymentAccountViewSet, RefillViewSet, DeductionViewSet, PositiveBalanceAccountsView
 from .user_account.user_views import UserDetailAPIView, UserViewSet, UserRegistrationAPIView, UserDetailView
 from .api_tokens.tokens_views import UserTokenListCreateAPIView, UserTokenRetrieveDestroyAPIView
+from .tarification_system.tariff_views import PlanViewSet, PromoCodeViewSet, UserPlanViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .news_system.news_views import NewListCreateView, NewDetailView, NewViewSet
 from apps.mail.acc_activation.activation_view import activate_account
@@ -34,22 +35,79 @@ urlpatterns = [
     path('tokens/<int:pk>/', UserTokenRetrieveDestroyAPIView.as_view(), name='user-token-detail'),
 
     # Платёжные аккаунты
-    path('payments/', PaymentAccountViewSet.as_view({'get': 'list', 'post': 'create'}), name='payment_account-list'),
-    path('payments/<int:pk>/', PaymentAccountViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='payment_account-detail'),
+    path('payments/', PaymentAccountViewSet.as_view({
+        'get': 'list',
+        'post': 'create'
+    }), name='payment_account-list'),
+    path('payments/<int:pk>/', PaymentAccountViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update',
+        'delete': 'destroy'
+    }), name='payment_account-detail'),
 
     # Пополнения для конкретного аккаунта
-    path('payments/<int:account_id>/refills/', RefillViewSet.as_view({'get': 'list', 'post': 'create'}), name='refill-list'),
-    path('payments/<int:account_id>/refills/<int:pk>/', RefillViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='refill-detail'),
+    path('payments/<int:account_id>/refills/', RefillViewSet.as_view({  # Не работает, переписать, выдаёт всё
+        'get': 'list',
+        'post': 'create'
+    }), name='refill-list'),
+    path('payments/<int:account_id>/refills/<int:pk>/', RefillViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update',
+        'delete': 'destroy'
+    }), name='refill-detail'),
 
     # Списания для конкретного аккаунта
-    path('payments/<int:account_id>/deductions/', DeductionViewSet.as_view({'get': 'list', 'post': 'create'}), name='deduction-list'),
-    path('payments/<int:account_id>/deductions/<int:pk>/', DeductionViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='deduction-detail'),
+    path('payments/<int:account_id>/deductions/', DeductionViewSet.as_view({
+        'get': 'list',
+        'post': 'create'
+    }), name='deduction-list'),
+    path('payments/<int:account_id>/deductions/<int:pk>/', DeductionViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update',
+        'delete': 'destroy'
+    }), name='deduction-detail'),
 
     # Просмотр всех пополненных счетов (только для админов)
     path('positive-balance-accounts/', PositiveBalanceAccountsView.as_view(), name='positive-balance-accounts'),
 
     # Активация аккаунта по email
     path('activate/<str:uidb64>/<str:token>/', activate_account, name='activate-account'),
+
+# Routes for Plan
+    path('plans/', PlanViewSet.as_view({
+        'get': 'list',              # GET :
+        'post': 'create'            # POST:
+    }), name='plan-list-create'),
+    path('plans/<int:pk>/', PlanViewSet.as_view({
+        'get': 'retrieve',          # GET :
+        'put': 'update',            # PUT :
+        'patch': 'partial_update',  # PATCH :
+        'delete': 'destroy',        # DELETE :
+    }), name='plan-detail'),
+
+    # Routes for PromoCode
+    path('promocodes/', PromoCodeViewSet.as_view({
+        'get': 'list',              # GET :
+        'post': 'create'            # POST:
+    }), name='promocode-list-create'),
+    path('promocodes/<int:pk>/', PromoCodeViewSet.as_view({
+        'get': 'retrieve',          # GET :
+        'put': 'update',            # PUT :
+        'patch': 'partial_update',  # PATCH :
+        'delete': 'destroy',        # DELETE :
+    }), name='promocode-detail'),
+
+    # Routes for UserPlan
+    path('userplans/', UserPlanViewSet.as_view({
+        'get': 'list',              # GET :
+        'post': 'create'            # POST:
+    }), name='userplan-list-create'),
+    path('userplans/<int:pk>/', UserPlanViewSet.as_view({
+        'get': 'retrieve',          # GET :
+        'put': 'update',            # PUT :
+        'patch': 'partial_update',  # PATCH :
+        'delete': 'destroy',        # DELETE :
+    }), name='userplan-detail'),
 ]
 
 
