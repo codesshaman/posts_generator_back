@@ -19,6 +19,7 @@ class Migration(migrations.Migration):
                 ('description', models.TextField()),
                 ('image_url', models.URLField(blank=True, null=True)),
                 ('content', models.TextField()),
+                ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
             ],

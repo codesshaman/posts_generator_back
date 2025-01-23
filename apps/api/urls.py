@@ -3,7 +3,8 @@ from .user_account.user_views import UserViewSet, UserRegistrationAPIView
 from .api_tokens.tokens_views import UserTokenViewSet
 from .tarification_system.tariff_views import PlanViewSet, PromoCodeViewSet, UserPlanViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .news_system.news_views import NewListCreateView, NewDetailView, NewViewSet
+from .news_system.news_views import NewViewSet
+# (NewListCreateView, NewDetailView, NewViewSet)
 from apps.mail.acc_activation.activation_view import activate_account
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
@@ -18,13 +19,24 @@ urlpatterns = [
     # Регистрация нового пользователя
     path('register/', UserRegistrationAPIView.as_view(), name='user-register'),
 
+    # Активация аккаунта по email
+    path('activate/<str:uidb64>/<str:token>/', activate_account, name='activate-account'),
+
     # # Маршруты для получения / обновления JWT-токенов
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # Маршруты для новостей
-    path('news/', NewListCreateView.as_view(), name='news-list-create'),
-    path('news/<int:pk>/', NewDetailView.as_view(), name='news-detail'),
+    path('news/', NewViewSet.as_view({
+        'get': 'list',              # GET : {{url}}/api/news/
+        'post': 'create'            # POST: {{url}}/api/news/
+    }), name='news-list-create'),
+    path('news/<int:pk>/', NewViewSet.as_view({
+        'get': 'retrieve',          # GET :  {{url}}/api/news/<new_id>/
+        'put': 'update',            # PUT :  {{url}}/api/news/<new_id>/
+        'patch': 'partial_update',  # PATCH :{{url}}/api/news/<new_id>/
+        'delete': 'destroy'         # DELETE:{{url}}/api/news/<new_id>/
+    }), name='news-detail'),
 
     # Платёжные аккаунты
     path('payments/', PaymentAccountViewSet.as_view({
@@ -39,8 +51,8 @@ urlpatterns = [
 
     # Пополнения для конкретного аккаунта
     path('payments/<int:account_id>/refills/', RefillViewSet.as_view({  # Не работает, переписать, выдаёт всё
-        'get': 'list',              # GET : /api/payments/
-        'post': 'create'            # POST: /api/payments/
+        'get': 'list',              # GET : {{url}}/api/payments/
+        'post': 'create'            # POST: {{url}}/api/payments/
     }), name='refill-list'),
     path('payments/<int:account_id>/refills/<int:pk>/', RefillViewSet.as_view({
         'get': 'retrieve',          # GET :
@@ -61,9 +73,6 @@ urlpatterns = [
 
     # Просмотр всех пополненных счетов (только для админов)
     path('positive-balance-accounts/', PositiveBalanceAccountsView.as_view(), name='positive-balance-accounts'),
-
-    # Активация аккаунта по email
-    path('activate/<str:uidb64>/<str:token>/', activate_account, name='activate-account'),
 
 # Routes for Plan
     path('plans/', PlanViewSet.as_view({
@@ -101,13 +110,14 @@ urlpatterns = [
         'delete': 'destroy',        # DELETE :
     }), name='userplan-detail'),
 
-    # Маршруты для пользователей
+    # User accounts
     path('im/', UserViewSet.as_view({
         'get': 'me',                # GET : {{url}}/api/im/
     }), name='user-detail'),
     path('user/<int:pk>/', UserViewSet.as_view({
-        'get': 'retrieve',          # GET : {{url}}/api/user/<user_id>/
-        'patch': 'update',  # PATCH:{{url}}/api/user/<user_id>/
+        'get': 'retrieve',          # GET :  {{url}}/api/user/<user_id>/
+        'patch': 'update',          # PATCH: {{url}}/api/user/<user_id>/
+        'delete': 'destroy',        # DELETE:{{url}}/api/user/<user_id>/
     }), name='user-detail'),
 
     # User tokens
@@ -120,137 +130,3 @@ urlpatterns = [
         'delete': 'destroy'         # DELETE: {{url}}/api/tokens/<token_id>
     }), name='user-token-detail'),
 ]
-
-
-################## API LIST ##################
-#################### USERS ###################
-##############################################
-### New user registration (open api for all):
-### POST: http://127.0.0.1:8000/api/register/
-### Content-Type: application/json
-### json: {
-### "login": "new_user_login",
-### "email": "new_user_email@example.com",
-### "name": "baby",
-### "surname": "baby",
-### "password": "secur333epassword444",
-### "password_confirm": "secur333epassword444",
-### "referrer": "1"
-### }
-#############################################
-### Get user data for authorized user
-### GET: http://127.0.0.1:8000/api/users/<user_id>/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-#############################################
-### Viewing and changing user data
-### PATCH: http://127.0.0.1:8000/api/user/<user_id>/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-### json: {
-### "changed_field": "changed_value",
-### "changed_field2": "changed_value2"
-### }
-#############################################
-################ JWT TOKENS #################
-#############################################
-### Get token for user session
-### POST: http://127.0.0.1:8000/api/token/
-### json: {
-### "login": "user_login",
-### "password": "user_password"
-### }
-#############################################
-### Refresh token for user session
-### POST: http://127.0.0.1:8000/api/token/refresh/
-### json: {
-### "refresh": "refresh_token"
-### }
-#############################################
-############### USER TOKENS #################
-#############################################
-### Get user tokens list for authorized user
-### GET: http://127.0.0.1:8000/api/tokens/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-#############################################
-### View token by id for authorized user
-### GET: http://127.0.0.1:8000/api/tokens/<token_id>/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-#############################################
-### Create new token for authorized user
-### POST: http://127.0.0.1:8000/api/tokens/<user_id>/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-### json: {
-### "name": "My New Token",
-### "expires_in_days": 90
-### }
-#############################################
-### Remove user tokens by id for authorized user
-### DELETE: http://127.0.0.1:8000/api/tokens/<token_id>/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-#############################################
-################# PAYMENTS ##################
-#############################################
-### View all not empty accounts for administrators
-### GET: http://127.0.0.1:8000/api/positive-balance-accounts/
-### Content-Type: application/json
-### Authorization: Bearer <admin_refresh_token>
-#############################################
-### Create payment account with first payment
-### POST: http://127.0.0.1:8000/api/payments/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-### json: {
-### "balance": <sum>,
-### "currency": "RUB",
-### "status": "active" ("frozen" if "balance": 0)
-### }
-#############################################
-### View payment account for authorized user
-### GET: http://127.0.0.1:8000/api/payments/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-#############################################
-################# REFILLS ###################
-#############################################
-### Create refill payment for authorized user
-### POST: http://127.0.0.1:8000/api/payments/<payment_account_id>/refills/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-### json: {
-### "amount": <sum>
-### }
-#############################################
-### View all refills for authorized user
-### GET: http://127.0.0.1:8000/api/payments/<payment_account_id>/refills/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-#############################################
-### View refills by refill id for authorized user
-### GET: http://127.0.0.1:8000/api/payments/<payment_account_id>/refills/<refill_id>/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-#############################################
-############### DEDUCTIONS ##################
-#############################################
-### Create deduction payment for authorized user
-### POST: http://127.0.0.1:8000/api/payments/<payment_account_id>/deductions/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-### json: {
-### "amount": <sum>
-### }
-#############################################
-### View all deductions for authorized user
-### GET: http://127.0.0.1:8000/api/payments/<payment_account_id>/deductions/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>
-#############################################
-### View deductions by deduction id for authorized user
-### GET: http://127.0.0.1:8000/api/payments/<payment_account_id>/deductions/<deduction_id>/
-### Content-Type: application/json
-### Authorization: Bearer <refresh_token>

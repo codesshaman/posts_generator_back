@@ -84,3 +84,25 @@ class UserViewSet(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        """
+        Мягкое удаление пользователя (установка is_active=False).
+        """
+        user = self.get_object(pk)  # Проверяем права через get_object
+
+        # Если пользователь уже не активен
+        if not user.is_active:
+            return Response(
+                {"detail": "Пользователь уже деактивирован."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Устанавливаем is_active=False
+        user.is_active = False
+        user.save()
+
+        return Response(
+            {"detail": f"Пользователь с ID {user.id} был деактивирован."},
+            status=status.HTTP_200_OK,
+        )
