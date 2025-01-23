@@ -10,23 +10,6 @@ from django.db import IntegrityError
 from .tokens_model import UserToken
 
 
-class UserTokenListCreateAPIView(ListCreateAPIView):
-    """
-    Список токенов текущего пользователя и создание нового токена.
-    """
-    serializer_class = UserTokenSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return UserToken.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        try:
-            serializer.save(user=self.request.user)
-        except IntegrityError:
-            raise ValidationError("Токен с таким именем уже существует.")
-
-
 
 class UserTokenViewSet(ViewSet):
     """

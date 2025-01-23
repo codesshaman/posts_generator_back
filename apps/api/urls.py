@@ -1,5 +1,5 @@
 from .payment_account.payment_views import PaymentAccountViewSet, RefillViewSet, DeductionViewSet, PositiveBalanceAccountsView
-from .user_account.user_views import UserDetailAPIView, UserViewSet, UserRegistrationAPIView, UserDetailView
+from .user_account.user_views import UserViewSet, UserRegistrationAPIView
 from .api_tokens.tokens_views import UserTokenViewSet
 from .tarification_system.tariff_views import PlanViewSet, PromoCodeViewSet, UserPlanViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -11,8 +11,6 @@ from django.urls import path, include
 
 # Роутер для автоматического создания маршрутов
 router = DefaultRouter()
-router.register(r'news', NewViewSet, basename='news')  # URL: /api/news/
-router.register(r'users', UserViewSet, basename='users')
 
 urlpatterns = [
     path('', include(router.urls)),  # Подключение всех маршрутов из роутера
@@ -27,10 +25,6 @@ urlpatterns = [
     # Маршруты для новостей
     path('news/', NewListCreateView.as_view(), name='news-list-create'),
     path('news/<int:pk>/', NewDetailView.as_view(), name='news-detail'),
-
-    # Маршруты для пользователей
-    path('user/<int:user_id>/', UserDetailAPIView.as_view(), name='user-detail'),
-    path('me/', UserDetailView.as_view(), name='user-detail'),
 
     # Платёжные аккаунты
     path('payments/', PaymentAccountViewSet.as_view({
@@ -107,6 +101,14 @@ urlpatterns = [
         'delete': 'destroy',        # DELETE :
     }), name='userplan-detail'),
 
+    # Маршруты для пользователей
+    path('im/', UserViewSet.as_view({
+        'get': 'me',                # GET : {{url}}/api/im/
+    }), name='user-detail'),
+    path('user/<int:pk>/', UserViewSet.as_view({
+        'get': 'retrieve',          # GET : {{url}}/api/user/<user_id>/
+        'patch': 'update',  # PATCH:{{url}}/api/user/<user_id>/
+    }), name='user-detail'),
 
     # User tokens
     path('tokens/', UserTokenViewSet.as_view({
@@ -114,8 +116,8 @@ urlpatterns = [
         'post': 'create'            # POST: {{url}}/api/tokens/
     }), name='user-token-list'),
     path('tokens/<int:pk>/', UserTokenViewSet.as_view({
-        'get': 'retrieve',          # GET : {{url}}/api/tokens/<token_id>
-        'delete': 'destroy'
+        'get': 'retrieve',          # GET :   {{url}}/api/tokens/<token_id>
+        'delete': 'destroy'         # DELETE: {{url}}/api/tokens/<token_id>
     }), name='user-token-detail'),
 ]
 

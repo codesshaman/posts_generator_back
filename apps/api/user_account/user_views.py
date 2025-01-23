@@ -1,28 +1,12 @@
 from .user_serializer import UserSerializer, UserRegistrationSerializer
 from rest_framework import generics, permissions, status, viewsets, views
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from project.models import User
-
-
-# Представление для списка пользователей (административный доступ)
-class UserViewSet(viewsets.ReadOnlyModelViewSet):  # Только для чтения
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAdminUser]  # Доступ только для администратора
-
-
-# Представление для просмотра только текущего залогиненного пользователя
-class UserDetailView(generics.RetrieveUpdateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]  # Только для аутентифицированных пользователей
-
-    def get_object(self):
-        return self.request.user  # Возвращаем текущего пользователя
 
 
 # Регистрация нового пользователя
@@ -43,29 +27,48 @@ class UserRegistrationAPIView(views.APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Представление для просмотра/изменения пользователя по токену
-class UserDetailAPIView(APIView):
+
+class UserViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, user_id, *args, **kwargs):
-        # Проверка, чтобы пользователь мог получить только свои данные
-        if request.user.id != user_id:
-            return Response(
-                {"detail": "Доступ запрещён. Вы можете получить только свои данные."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+    def get_object(self, pk=None):
+        """
+        Возвращает объект пользователя в зависимости от прав текущего пользователя.
+        """
+        user = self.request.user
 
-        user = get_object_or_404(User, id=user_id)
+        # Если администратор, разрешить доступ к любому пользователю
+        if user.is_staff:
+            return get_object_or_404(User, id=pk)
+
+        # Если обычный пользователь, ограничить доступ только к своим данным
+        if pk is None or user.id != int(pk):
+            raise PermissionDenied("Доступ запрещён. Вы можете работать только со своими данными.")
+
+        return get_object_or_404(User, id=pk)
+
+    @action(detail=False, methods=['get'])
+    def me(self, request, *args, **kwargs):
+        """
+        Возвращает данные текущего авторизованного пользователя.
+        """
+        user = request.user  # Получаем текущего пользователя из request
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=200)
+
+    def retrieve(self, request, pk=None):
+        """
+        Получение данных пользователя по ID.
+        """
+        user = self.get_object(pk)  # Используем проверку через get_object
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def patch(self, request, user_id, *args, **kwargs):
-        # Проверка, чтобы пользователь мог изменять только свои данные
-        if request.user.id != user_id:
-            return Response(
-                {"detail": "Доступ запрещён. Вы можете изменять только свои данные."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+    def update(self, request, pk=None):
+        """
+        Частичное обновление данных пользователя.
+        """
+        user = self.get_object(pk)  # Используем проверку через get_object
 
         # Проверка на попытку изменить is_staff
         if 'is_staff' in request.data and not request.user.is_staff:
@@ -74,28 +77,8 @@ class UserDetailAPIView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        user = get_object_or_404(User, id=user_id)
-
-        # Сериализатор для частичного обновления данных пользователя
+        # Сериализатор для обновления данных пользователя
         serializer = UserSerializer(user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, user_id, *args, **kwargs):
-        # Проверка, чтобы пользователь мог изменять только свои данные
-        if request.user.id != user_id:
-            return Response(
-                {"detail": "Доступ запрещён. Вы можете изменять только свои данные."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        user = get_object_or_404(User, id=user_id)
-
-        # Сериализатор для полного обновления данных пользователя
-        serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
