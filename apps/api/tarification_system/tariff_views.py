@@ -1,9 +1,11 @@
+import datetime
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .tariff_model import Plan, PromoCode, UserPlan
 from .tariff_serializer import PlanSerializer, PromoCodeSerializer, UserPlanSerializer
 
+now = datetime.datetime.now
 
 # Представление для Plan
 class PlanViewSet(viewsets.ModelViewSet):

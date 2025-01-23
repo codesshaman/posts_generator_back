@@ -1,6 +1,6 @@
 from .payment_account.payment_views import PaymentAccountViewSet, RefillViewSet, DeductionViewSet, PositiveBalanceAccountsView
 from .user_account.user_views import UserDetailAPIView, UserViewSet, UserRegistrationAPIView, UserDetailView
-from .api_tokens.tokens_views import UserTokenListCreateAPIView, UserTokenRetrieveDestroyAPIView
+from .api_tokens.tokens_views import UserTokenViewSet
 from .tarification_system.tariff_views import PlanViewSet, PromoCodeViewSet, UserPlanViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .news_system.news_views import NewListCreateView, NewDetailView, NewViewSet
@@ -17,54 +17,52 @@ router.register(r'users', UserViewSet, basename='users')
 urlpatterns = [
     path('', include(router.urls)),  # Подключение всех маршрутов из роутера
 
-    # Маршруты для новостей
-    path('news/', NewListCreateView.as_view(), name='news-list-create'),
-    path('news/<int:pk>/', NewDetailView.as_view(), name='news-detail'),
-
-    # Маршруты для пользователей
+    # Регистрация нового пользователя
     path('register/', UserRegistrationAPIView.as_view(), name='user-register'),
-    path('user/<int:user_id>/', UserDetailAPIView.as_view(), name='user-detail'),
-    path('me/', UserDetailView.as_view(), name='user-detail'),
 
     # # Маршруты для получения / обновления JWT-токенов
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    # # Маршруты для получения / обновления пользовательских токенов
-    path('tokens/', UserTokenListCreateAPIView.as_view(), name='user-token-list'),
-    path('tokens/<int:pk>/', UserTokenRetrieveDestroyAPIView.as_view(), name='user-token-detail'),
+    # Маршруты для новостей
+    path('news/', NewListCreateView.as_view(), name='news-list-create'),
+    path('news/<int:pk>/', NewDetailView.as_view(), name='news-detail'),
+
+    # Маршруты для пользователей
+    path('user/<int:user_id>/', UserDetailAPIView.as_view(), name='user-detail'),
+    path('me/', UserDetailView.as_view(), name='user-detail'),
 
     # Платёжные аккаунты
     path('payments/', PaymentAccountViewSet.as_view({
-        'get': 'list',
-        'post': 'create'
+        'get': 'list',              # GET :
+        'post': 'create'            # POST:
     }), name='payment_account-list'),
     path('payments/<int:pk>/', PaymentAccountViewSet.as_view({
-        'get': 'retrieve',
-        'put': 'update',
-        'delete': 'destroy'
+        'get': 'retrieve',          # GET :
+        'put': 'update',            # PUT :
+        'delete': 'destroy'         # DELETE:
     }), name='payment_account-detail'),
 
     # Пополнения для конкретного аккаунта
     path('payments/<int:account_id>/refills/', RefillViewSet.as_view({  # Не работает, переписать, выдаёт всё
-        'get': 'list',
-        'post': 'create'
+        'get': 'list',              # GET : /api/payments/
+        'post': 'create'            # POST: /api/payments/
     }), name='refill-list'),
     path('payments/<int:account_id>/refills/<int:pk>/', RefillViewSet.as_view({
-        'get': 'retrieve',
-        'put': 'update',
-        'delete': 'destroy'
+        'get': 'retrieve',          # GET :
+        'put': 'update',            # PUT :
+        'delete': 'destroy'         # DELETE:
     }), name='refill-detail'),
 
     # Списания для конкретного аккаунта
     path('payments/<int:account_id>/deductions/', DeductionViewSet.as_view({
-        'get': 'list',
-        'post': 'create'
+        'get': 'list',              # GET :
+        'post': 'create'            # POST:
     }), name='deduction-list'),
     path('payments/<int:account_id>/deductions/<int:pk>/', DeductionViewSet.as_view({
-        'get': 'retrieve',
-        'put': 'update',
-        'delete': 'destroy'
+        'get': 'retrieve',          #
+        'put': 'update',            #
+        'delete': 'destroy'         #
     }), name='deduction-detail'),
 
     # Просмотр всех пополненных счетов (только для админов)
@@ -108,6 +106,17 @@ urlpatterns = [
         'patch': 'partial_update',  # PATCH :
         'delete': 'destroy',        # DELETE :
     }), name='userplan-detail'),
+
+
+    # User tokens
+    path('tokens/', UserTokenViewSet.as_view({
+        'get': 'list',              # GET : {{url}}/api/tokens/
+        'post': 'create'            # POST: {{url}}/api/tokens/
+    }), name='user-token-list'),
+    path('tokens/<int:pk>/', UserTokenViewSet.as_view({
+        'get': 'retrieve',          # GET : {{url}}/api/tokens/<token_id>
+        'delete': 'destroy'
+    }), name='user-token-detail'),
 ]
 
 

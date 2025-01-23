@@ -23,8 +23,14 @@ class PaymentAccountViewSet(
     def get_queryset(self):
         """
         Возвращает только платёжные аккаунты текущего авторизованного пользователя.
+        Администраторы видят все аккаунты.
         """
-        return PaymentAccount.objects.filter(user=self.request.user)
+        user = self.request.user
+        if user.is_staff:  # Администратор видит все аккаунты
+            return PaymentAccount.objects.all()
+
+        # Обычный пользователь видит только свои аккаунты
+        return PaymentAccount.objects.filter(user=user)
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -36,12 +42,20 @@ class PaymentAccountViewSet(
         # Создаем новый платёжный аккаунт
         serializer.save(user_id=user.id)
 
+
     @action(detail=True, methods=['get'])
     def refills(self, request, pk=None):
         """
         Возвращает список пополнений для указанного платёжного аккаунта.
+        Только владелец аккаунта или администратор может видеть пополнения.
         """
-        account = self.get_object()
+        account = self.get_object()  # Получаем аккаунт из пути (по pk)
+
+        # Проверяем, принадлежит ли аккаунт текущему пользователю или это администратор
+        if not request.user.is_staff and account.user != request.user:
+            raise PermissionDenied("Вы можете видеть пополнения только для своих аккаунтов.")
+
+        # Фильтруем пополнения, связанные с этим аккаунтом
         refills = account.refills.all()
         serializer = RefillSerializer(refills, many=True)
         return Response(serializer.data)
@@ -50,8 +64,13 @@ class PaymentAccountViewSet(
     def deductions(self, request, pk=None):
         """
         Возвращает список списаний для указанного платёжного аккаунта.
+        Только владелец аккаунта или администратор может видеть списания.
         """
         account = self.get_object()
+
+        if not request.user.is_staff and account.user != request.user:
+            raise PermissionDenied("Вы можете видеть списания только для своих аккаунтов.")
+
         deductions = account.deductions.all()
         serializer = DeductionSerializer(deductions, many=True)
         return Response(serializer.data)
@@ -75,6 +94,11 @@ class RefillViewSet(
         """
         # Получаем аккаунт по account_id из запроса
         account = PaymentAccount.objects.get(account_id=self.kwargs['account_id'])
+        user = self.request.user
+
+        # Проверяем, принадлежит ли аккаунт текущему пользователю или это администратор
+        if not user.is_staff and account.user != user:
+            raise PermissionDenied("Вы можете проводить операции только со своими аккаунтами.")
 
         # Увеличиваем баланс
         account.balance += serializer.validated_data['amount']
@@ -103,6 +127,11 @@ class DeductionViewSet(
         # Получаем аккаунт
         account = PaymentAccount.objects.get(account_id=self.kwargs['account_id'])
         deduction_amount = serializer.validated_data['amount']
+        user = self.request.user
+
+        # Проверяем, принадлежит ли аккаунт текущему пользователю или это администратор
+        if not user.is_staff and account.user != user:
+            raise PermissionDenied("Вы можете проводить операции только со своими аккаунтами.")
 
         # Проверяем, достаточно ли средств на балансе
         if account.balance < deduction_amount:
