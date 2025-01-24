@@ -21,10 +21,15 @@ class Migration(migrations.Migration):
                 ('balance', models.DecimalField(decimal_places=6, default=0.0, max_digits=20)),
                 ('currency', models.CharField(max_length=3)),
                 ('status', models.CharField(max_length=20)),
+                ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
+        ),
+        migrations.AlterUniqueTogether(
+            name='paymentaccount',
+            unique_together={('user', 'currency')},
         ),
         migrations.CreateModel(
             name='Deduction',

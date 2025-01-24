@@ -15,6 +15,7 @@ class NewViewSet(ModelViewSet):
     serializer_class = NewSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+
     def get_queryset(self):
         """
         Возвращает набор новостей.
@@ -25,6 +26,7 @@ class NewViewSet(ModelViewSet):
         if user.is_staff:
             return New.objects.all()  # Администраторы видят все новости
         return New.objects.filter(is_active=True)  # Обычные пользователи видят только активные новости
+
 
     def create(self, request, *args, **kwargs):
         """
@@ -52,6 +54,7 @@ class NewViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
         return super().update(request, *args, **kwargs)
+
 
     def partial_update(self, request, *args, **kwargs):
         """

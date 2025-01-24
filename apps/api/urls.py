@@ -1,10 +1,11 @@
-from .payment_account.payment_views import PaymentAccountViewSet, RefillViewSet, DeductionViewSet, PositiveBalanceAccountsView
+from .payment_account.payment_views import PaymentAccountViewSet, PaymentAccountsViewSet, RefillViewSet, DeductionViewSet, PositiveBalanceAccountsView
 from .user_account.user_views import UserViewSet, UserRegistrationAPIView
 from .api_tokens.tokens_views import UserTokenViewSet
+from .payment_currency.update_currency import UpdateCurrencyRatesAPIView
+from .payment_currency.currency_view import UserCurrenciesAPIView, AccountCurrencyAPIView, CurrencyRateAPIView
 from .tarification_system.tariff_views import PlanViewSet, PromoCodeViewSet, UserPlanViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .news_system.news_views import NewViewSet
-# (NewListCreateView, NewDetailView, NewViewSet)
 from apps.mail.acc_activation.activation_view import activate_account
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
@@ -16,13 +17,13 @@ router = DefaultRouter()
 urlpatterns = [
     path('', include(router.urls)),  # Подключение всех маршрутов из роутера
 
-    # Регистрация нового пользователя
+    # Регистрация нового пользователя POST: {{url}}/api/register/
     path('register/', UserRegistrationAPIView.as_view(), name='user-register'),
 
     # Активация аккаунта по email
     path('activate/<str:uidb64>/<str:token>/', activate_account, name='activate-account'),
 
-    # # Маршруты для получения / обновления JWT-токенов
+    # # Маршруты для получения / обновления JWT-токенов POST:{{url}}/api/token/
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
@@ -40,13 +41,13 @@ urlpatterns = [
 
     # Платёжные аккаунты
     path('payments/', PaymentAccountViewSet.as_view({
-        'get': 'list',              # GET :
-        'post': 'create'            # POST:
+        'get': 'list',              # GET : {{url}}/api/payments/
+        'post': 'create'            # POST: {{url}}/api/payments/
     }), name='payment_account-list'),
-    path('payments/<int:pk>/', PaymentAccountViewSet.as_view({
-        'get': 'retrieve',          # GET :
-        'put': 'update',            # PUT :
-        'delete': 'destroy'         # DELETE:
+    path('payments/<int:pk>/', PaymentAccountsViewSet.as_view({
+        'get': 'retrieve',          # GET :  {{url}}/api/payments/<acc_id>/
+        'delete': 'destroy',        # DELETE:{{url}}/api/payments/<acc_id>/
+        'patch': 'activate'         # PATCH: {{url}}/api/payments/<acc_id>/
     }), name='payment_account-detail'),
 
     # Пополнения для конкретного аккаунта
@@ -73,6 +74,18 @@ urlpatterns = [
 
     # Просмотр всех пополненных счетов (только для админов)
     path('positive-balance-accounts/', PositiveBalanceAccountsView.as_view(), name='positive-balance-accounts'),
+
+    # Обновление курса валют (только для админов)
+    path("update-currency-rates/", UpdateCurrencyRatesAPIView.as_view(), name="update-currency-rates"),
+
+    # Просмотр курса валют одного аккаунта по id относительно рубля
+    path('payments/<int:account_id>/currency/', AccountCurrencyAPIView.as_view(), name='account_currency'),
+
+    # Просмотр курсов валют всех аккаунтов пользователя относительно рубля
+    path('currencies/', UserCurrenciesAPIView.as_view(), name='user-currencies'),
+
+    # Просмотр курсов любой переданной валюты относительно рубля (POST)
+    path('currency/rate/', CurrencyRateAPIView.as_view(), name='currency_rate'),
 
 # Routes for Plan
     path('plans/', PlanViewSet.as_view({

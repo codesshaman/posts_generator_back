@@ -3,55 +3,20 @@ from .payment_model import PaymentAccount, Refill, Deduction
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
-from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import viewsets, mixins
 from rest_framework.views import APIView
 
 
 class PaymentAccountViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
-    mixins.CreateModelMixin
-):
-    """
-    Представление для управления платёжными аккаунтами.
-    """
-    serializer_class = PaymentAccountSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        """
-        Возвращает только платёжные аккаунты текущего авторизованного пользователя.
-        Администраторы видят все аккаунты.
-        """
-        user = self.request.user
-        if user.is_staff:  # Администратор видит все аккаунты
-            return PaymentAccount.objects.all()
-        # Обычный пользователь видит только свои аккаунты
-        return PaymentAccount.objects.filter(user=user, is_active=True)
-
-    def perform_create(self, serializer):
-        user = self.request.user
-        currency = serializer.validated_data.get('currency')  # Извлекаем валюту из данных
-
-        # Проверяем, существует ли уже платёжный аккаунт с данной валютой для пользователя
-        if PaymentAccount.objects.filter(user=user, currency=currency).exists():
-            raise ValidationError(f"Платёжный аккаунт с валютой {currency} уже существует для данного пользователя.")
-
-        # Создаём новый платёжный аккаунт
-        serializer.save(user=user)
-
-class PaymentAccountsViewSet(
-    viewsets.GenericViewSet,
-    mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin
 ):
-    """
-    Представление для управления платёжными аккаунтами.
-    """
     serializer_class = PaymentAccountSerializer
     permission_classes = [IsAuthenticated]
 
@@ -63,82 +28,51 @@ class PaymentAccountsViewSet(
         user = self.request.user
         if user.is_staff:  # Администратор видит все аккаунты
             return PaymentAccount.objects.all()
+
         # Обычный пользователь видит только свои аккаунты
         return PaymentAccount.objects.filter(user=user)
 
     def perform_create(self, serializer):
-        """
-        Создаёт платёжный аккаунт с проверкой уникальности валюты для пользователя.
-        """
         user = self.request.user
-        currency = serializer.validated_data.get('currency')  # Извлекаем валюту из данных
 
-        # Проверяем, существует ли уже платёжный аккаунт с данной валютой для пользователя
-        if PaymentAccount.objects.filter(user=user, currency=currency).exists():
-            raise ValidationError(f"Платёжный аккаунт с валютой {currency} уже существует для данного пользователя.")
+        # Проверяем, существует ли уже платёжный аккаунт для пользователя
+        if PaymentAccount.objects.filter(user=user).exists():
+            raise ValidationError("Платёжный аккаунт для данного пользователя уже существует.")
 
-        # Создаём новый платёжный аккаунт
-        serializer.save(user=user, is_active=True)
+        # Создаем новый платёжный аккаунт
+        serializer.save(user_id=user.id)
 
-    def destroy(self, request, *args, **kwargs):
+
+    @action(detail=True, methods=['get'])
+    def refills(self, request, pk=None):
         """
-        Мягкое удаление аккаунта: устанавливает is_active=False.
+        Возвращает список пополнений для указанного платёжного аккаунта.
+        Только владелец аккаунта или администратор может видеть пополнения.
         """
-        instance = self.get_object()
+        account = self.get_object()  # Получаем аккаунт из пути (по pk)
 
-        # Проверяем, имеет ли пользователь права на удаление
-        if not request.user.is_staff and instance.user != request.user:
-            return Response(
-                {"detail": "У вас нет прав на удаление этого платёжного аккаунта."},
-                status=403
-            )
+        # Проверяем, принадлежит ли аккаунт текущему пользователю или это администратор
+        if not request.user.is_staff and account.user != request.user:
+            raise PermissionDenied("Вы можете видеть пополнения только для своих аккаунтов.")
 
-        # Мягкое удаление
-        instance.is_active = False
-        instance.save()
+        # Фильтруем пополнения, связанные с этим аккаунтом
+        refills = account.refills.all()
+        serializer = RefillSerializer(refills, many=True)
+        return Response(serializer.data)
 
-        return Response({"detail": "Платёжный аккаунт успешно деактивирован."}, status=204)
-
-
-    def activate(self, request, *args, **kwargs):
+    @action(detail=True, methods=['get'])
+    def deductions(self, request, pk=None):
         """
-        Мягкое восстановление аккаунта: устанавливает is_active=True.
+        Возвращает список списаний для указанного платёжного аккаунта.
+        Только владелец аккаунта или администратор может видеть списания.
         """
-        instance = self.get_object()
+        account = self.get_object()
 
-        # Проверяем, имеет ли пользователь права на восстановление
-        if not request.user.is_staff and instance.user != request.user:
-            return Response(
-                {"detail": "У вас нет прав на восстановление этого платёжного аккаунта."},
-                status=403
-            )
+        if not request.user.is_staff and account.user != request.user:
+            raise PermissionDenied("Вы можете видеть списания только для своих аккаунтов.")
 
-        # Мягкое восстановление
-        instance.is_active = True
-        instance.save()
-
-        return Response({"detail": "Платёжный аккаунт успешно восстановлен."}, status=204)
-
-
-    def update(self, request, *args, **kwargs):
-        """
-        Обновляет данные платёжного аккаунта.
-        """
-        instance = self.get_object()
-
-        # Проверяем, имеет ли пользователь права на редактирование
-        if not request.user.is_staff and instance.user != request.user:
-            return Response(
-                {"detail": "У вас нет прав на редактирование этого платёжного аккаунта."},
-                status=403
-            )
-
-        # Обновление аккаунта
-        partial = kwargs.pop('partial', False)
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
+        deductions = account.deductions.all()
+        serializer = DeductionSerializer(deductions, many=True)
         return Response(serializer.data)
 
 

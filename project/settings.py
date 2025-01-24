@@ -178,6 +178,8 @@ LANGUAGE_CODE = 'ru-ru'
 
 TIME_ZONE = 'Europe/Moscow'
 
+BASE_CURRENCY = 'RUB'
+
 USE_I18N = True
 
 USE_TZ = True

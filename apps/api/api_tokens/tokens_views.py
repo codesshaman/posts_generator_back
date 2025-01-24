@@ -1,5 +1,4 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveDestroyAPIView
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from .tokens_serializer import UserTokenSerializer
 from django.utils.timezone import now, timedelta
@@ -8,7 +7,6 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from django.db import IntegrityError
 from .tokens_model import UserToken
-
 
 
 class UserTokenViewSet(ViewSet):
@@ -37,6 +35,7 @@ class UserTokenViewSet(ViewSet):
         queryset = self.get_queryset()
         serializer = UserTokenSerializer(queryset, many=True)
         return Response(serializer.data)
+
 
     def create(self, request):
         """
