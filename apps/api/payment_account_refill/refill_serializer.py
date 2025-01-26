@@ -3,16 +3,28 @@ from .refill_model import Refill
 
 
 class RefillSerializer(serializers.ModelSerializer):
+    account_balance = serializers.DecimalField(
+        max_digits=20, decimal_places=6, read_only=True
+    )  # Поле для баланса аккаунта
+    current_balance = serializers.DecimalField(
+        max_digits=20, decimal_places=6, read_only=True
+    )
+    is_active = serializers.BooleanField(read_only=True)  # Только для чтения
+    account = serializers.PrimaryKeyRelatedField(read_only=True)  # account_id только для чтения
+
     class Meta:
         model = Refill
-        fields = ['refill_id', 'account_id', 'amount', 'refill_time']
+        fields = ['refill_id', 'account', 'amount', 'refill_time', 'current_balance', 'is_active', 'account_balance']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         request = self.context.get('request')
 
+        # Получаем баланс связанного аккаунта
+        representation['account_balance'] = instance.account.balance if instance.account else None
+
+        # Скрываем сумму пополнения для обычных пользователей
         if request and not request.user.is_staff:
-            # Получаем пользователя через связанный аккаунт
             account_user = instance.account.user
             if account_user != request.user:
                 representation.pop('amount')  # Скрываем сумму пополнения

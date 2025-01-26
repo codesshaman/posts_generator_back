@@ -29,4 +29,3 @@ class DeductionSerializer(serializers.ModelSerializer):
             if account_user != request.user:
                 representation.pop('amount')  # Скрываем сумму списания
         return representation
-

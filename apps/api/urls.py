@@ -59,9 +59,11 @@ urlpatterns = [
     }), name='refill-list'),
     path('payments/<int:account_id>/refills/<int:pk>/', RefillViewSet.as_view({
         'get': 'retrieve',          # GET :
-        'put': 'update',            # PUT :
         'delete': 'destroy'         # DELETE:
     }), name='refill-detail'),
+    path('payments/<int:account_id>/refills/<int:pk>/restore/', RefillViewSet.as_view({
+        'post': 'restore'           # POST: {{url}}/payments/<acc_id>/deductions/<deduction_id>/restore/
+    }), name='deduction-restore'),
 
     # Списания для конкретного аккаунта
     path('payments/<int:account_id>/deductions/', DeductionViewSet.as_view({
