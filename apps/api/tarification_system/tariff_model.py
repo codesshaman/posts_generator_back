@@ -6,7 +6,8 @@ from django.utils.timezone import now
 class Plan(models.Model):
     plan_id = models.AutoField(primary_key=True)
     plan = models.CharField(max_length=255, unique=True)
-    ratio = models.DecimalField(max_digits=10, decimal_places=6)
+    coins = models.DecimalField(max_digits=10, decimal_places=6)
+    price = models.DecimalField(max_digits=10, decimal_places=6)
     description = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_archived = models.BooleanField(default=False)
@@ -19,7 +20,7 @@ class Plan(models.Model):
 class PromoCode(models.Model):
     promo_id = models.AutoField(primary_key=True)
     code = models.CharField(max_length=50, unique=True)
-    promo_ratio = models.DecimalField(max_digits=10, decimal_places=6)
+    promo_discount = models.DecimalField(max_digits=10, decimal_places=6)
     description = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_archived = models.BooleanField(default=False)

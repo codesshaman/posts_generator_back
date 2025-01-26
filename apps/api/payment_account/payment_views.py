@@ -1,11 +1,10 @@
-from .payment_serializer import PaymentAccountSerializer, RefillSerializer, DeductionSerializer, PositiveBalanceAccountsSerializer
-from .payment_model import PaymentAccount, Refill, Deduction
+from .payment_serializer import PaymentAccountSerializer, PositiveBalanceAccountsSerializer
+from .payment_model import PaymentAccount
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
-from rest_framework import viewsets, mixins, status
-from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import viewsets, mixins
 from rest_framework.views import APIView
 
 
@@ -99,7 +98,6 @@ class PaymentAccountsViewSet(
 
         return Response({"detail": "Платёжный аккаунт успешно деактивирован."}, status=204)
 
-
     def activate(self, request, *args, **kwargs):
         """
         Мягкое восстановление аккаунта: устанавливает is_active=True.
@@ -118,7 +116,6 @@ class PaymentAccountsViewSet(
         instance.save()
 
         return Response({"detail": "Платёжный аккаунт успешно восстановлен."}, status=204)
-
 
     def update(self, request, *args, **kwargs):
         """
@@ -140,77 +137,6 @@ class PaymentAccountsViewSet(
         self.perform_update(serializer)
 
         return Response(serializer.data)
-
-
-class RefillViewSet(
-    viewsets.GenericViewSet,
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin
-):
-    queryset = Refill.objects.all()
-    serializer_class = RefillSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        """
-        Создает новое пополнение и увеличивает баланс соответствующего аккаунта.
-        """
-        # Получаем аккаунт по account_id из запроса
-        account = PaymentAccount.objects.get(account_id=self.kwargs['account_id'])
-        user = self.request.user
-
-        # Проверяем, принадлежит ли аккаунт текущему пользователю или это администратор
-        if not user.is_staff and account.user != user:
-            raise PermissionDenied("Вы можете проводить операции только со своими аккаунтами.")
-
-        # Увеличиваем баланс
-        account.balance += serializer.validated_data['amount']
-        account.save()
-
-        # Сохраняем объект пополнения, связанный с аккаунтом
-        serializer.save(account=account)
-
-
-class DeductionViewSet(
-    viewsets.GenericViewSet,
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin
-):
-    queryset = Deduction.objects.all()
-    serializer_class = DeductionSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        """
-        Проверяет баланс и выполняет списание, если достаточно средств.
-        """
-        # Получаем аккаунт
-        account = PaymentAccount.objects.get(account_id=self.kwargs['account_id'])
-        deduction_amount = serializer.validated_data['amount']
-        user = self.request.user
-
-        # Проверяем, принадлежит ли аккаунт текущему пользователю или это администратор
-        if not user.is_staff and account.user != user:
-            raise PermissionDenied("Вы можете проводить операции только со своими аккаунтами.")
-
-        # Проверяем, достаточно ли средств на балансе
-        if account.balance < deduction_amount:
-            raise ValidationError(
-                f"Недостаточно средств на счёте. Текущий баланс: {account.balance}, сумма списания: {deduction_amount}"
-            )
-
-        # Уменьшаем баланс
-        account.balance -= deduction_amount
-        account.save()
-
-        # Сохраняем объект списания
-        serializer.save(account=account)
 
 
 class PositiveBalanceAccountsView(APIView):

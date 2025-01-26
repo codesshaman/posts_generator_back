@@ -1,4 +1,6 @@
-from .payment_account.payment_views import PaymentAccountViewSet, PaymentAccountsViewSet, RefillViewSet, DeductionViewSet, PositiveBalanceAccountsView
+from .payment_account.payment_views import PaymentAccountViewSet, PaymentAccountsViewSet, PositiveBalanceAccountsView
+from .payment_account_deduction.deduction_view import DeductionViewSet
+from .payment_account_refill.refill_view import RefillViewSet
 from .user_account.user_views import UserViewSet, UserRegistrationAPIView
 from .api_tokens.tokens_views import UserTokenViewSet
 from .payment_currency.update_currency import UpdateCurrencyRatesAPIView
@@ -63,14 +65,17 @@ urlpatterns = [
 
     # Списания для конкретного аккаунта
     path('payments/<int:account_id>/deductions/', DeductionViewSet.as_view({
-        'get': 'list',              # GET :
-        'post': 'create'            # POST:
+        'get': 'list',              # GET : {{url}}/payments/<acc_id>/deductions/
+        'post': 'create'            # POST: {{url}}/payments/<acc_id>/deductions/
     }), name='deduction-list'),
     path('payments/<int:account_id>/deductions/<int:pk>/', DeductionViewSet.as_view({
-        'get': 'retrieve',          #
-        'put': 'update',            #
-        'delete': 'destroy'         #
+        'get': 'retrieve',          # GET : {{url}}/payments/<acc_id>/deductions/<deduction_id>
+        'put': 'update',            # PUT : {{url}}/payments/<acc_id>/deductions/<deduction_id>
+        'delete': 'destroy'         #DELETE:{{url}}/payments/<acc_id>/deductions/<deduction_id>
     }), name='deduction-detail'),
+    path('payments/<int:account_id>/deductions/<int:pk>/restore/', DeductionViewSet.as_view({
+        'post': 'restore'           # POST: {{url}}/payments/<acc_id>/deductions/<deduction_id>/restore/
+    }), name='deduction-restore'),
 
     # Просмотр всех пополненных счетов (только для админов)
     path('positive-balance-accounts/', PositiveBalanceAccountsView.as_view(), name='positive-balance-accounts'),

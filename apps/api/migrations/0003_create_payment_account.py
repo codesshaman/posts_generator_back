@@ -38,6 +38,7 @@ class Migration(migrations.Migration):
                 ('amount', models.DecimalField(decimal_places=6, max_digits=20)),
                 ('deduction_time', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('account', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='deductions', to='api.paymentaccount')),
+                ('is_active', models.BooleanField(default=True)),
             ],
         ),
         migrations.CreateModel(
@@ -47,6 +48,7 @@ class Migration(migrations.Migration):
                 ('amount', models.DecimalField(decimal_places=6, max_digits=20)),
                 ('refill_time', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('account', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='refills', to='api.paymentaccount')),
+                ('is_active', models.BooleanField(default=True)),
             ],
         ),
     ]
