@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .news_model import New
+from .news_models import New
 
 
 @admin.register(New)

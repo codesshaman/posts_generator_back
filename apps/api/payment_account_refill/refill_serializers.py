@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .refill_model import Refill
+from .refill_models import Refill
 
 
 class RefillSerializer(serializers.ModelSerializer):

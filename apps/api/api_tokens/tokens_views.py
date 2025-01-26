@@ -1,12 +1,12 @@
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
-from .tokens_serializer import UserTokenSerializer
+from .tokens_serializers import UserTokenSerializer
 from django.utils.timezone import now, timedelta
 from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from django.db import IntegrityError
-from .tokens_model import UserToken
+from .tokens_models import UserToken
 
 
 class UserTokenViewSet(ViewSet):

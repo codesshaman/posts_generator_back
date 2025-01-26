@@ -2,8 +2,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework import status
-from .news_serializer import NewSerializer
-from .news_model import New
+from .news_serializers import NewSerializer
+from .news_models import New
 
 
 class NewViewSet(ModelViewSet):

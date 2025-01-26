@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .deduction_model import Deduction
+from .deduction_models import Deduction
 
 
 class DeductionSerializer(serializers.ModelSerializer):

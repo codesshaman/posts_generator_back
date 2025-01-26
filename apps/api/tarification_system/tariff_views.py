@@ -1,9 +1,9 @@
-import datetime
-from rest_framework import viewsets, status
-from rest_framework.response import Response
+from .tariff_serializers import PlanSerializer, UserPlanSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .tariff_model import Plan, PromoCode, UserPlan
-from .tariff_serializer import PlanSerializer, PromoCodeSerializer, UserPlanSerializer
+from rest_framework.response import Response
+from rest_framework import viewsets, status
+from .tariff_models import Plan, UserPlan
+import datetime
 
 now = datetime.datetime.now
 
@@ -15,19 +15,6 @@ class PlanViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         """При удалении переводим тариф в архив вместо реального удаления."""
-        instance.is_archived = True
-        instance.archived_in = now()
-        instance.save()
-
-
-# Представление для PromoCode
-class PromoCodeViewSet(viewsets.ModelViewSet):
-    queryset = PromoCode.objects.all()
-    serializer_class = PromoCodeSerializer
-    permission_classes = [AllowAny]
-
-    def perform_destroy(self, instance):
-        """При удалении переводим промокод в архив вместо реального удаления."""
         instance.is_archived = True
         instance.archived_in = now()
         instance.save()

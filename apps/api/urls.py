@@ -1,11 +1,12 @@
 from .payment_account.payment_views import PaymentAccountViewSet, PaymentAccountsViewSet, PositiveBalanceAccountsView
-from .payment_account_deduction.deduction_view import DeductionViewSet
-from .payment_account_refill.refill_view import RefillViewSet
+from .payment_account_deduction.deduction_views import DeductionViewSet
+from .payment_account_refill.refill_views import RefillViewSet
 from .user_account.user_views import UserViewSet, UserRegistrationAPIView
 from .api_tokens.tokens_views import UserTokenViewSet
 from .payment_currency.update_currency import UpdateCurrencyRatesAPIView
-from .payment_currency.currency_view import UserCurrenciesAPIView, AccountCurrencyAPIView, CurrencyRateAPIView
-from .tarification_system.tariff_views import PlanViewSet, PromoCodeViewSet, UserPlanViewSet
+from .payment_currency.currency_views import UserCurrenciesAPIView, AccountCurrencyAPIView, CurrencyRateAPIView
+from .tarification_system.tariff_views import PlanViewSet, UserPlanViewSet
+from .promocodes_system.promocode_views import PromoCodeViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .news_system.news_views import NewViewSet
 from apps.mail.acc_activation.activation_view import activate_account

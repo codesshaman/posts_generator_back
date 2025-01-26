@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .tokens_model import UserToken
+from .tokens_models import UserToken
 
 
 class UserTokenAdmin(admin.ModelAdmin):

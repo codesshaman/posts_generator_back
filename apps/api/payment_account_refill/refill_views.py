@@ -4,9 +4,9 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
-from .refill_model import Refill
-from .refill_serializer import RefillSerializer
-from ..payment_account.payment_model import PaymentAccount
+from .refill_models import Refill
+from .refill_serializers import RefillSerializer
+from ..payment_account.payment_models import PaymentAccount
 
 
 class RefillViewSet(

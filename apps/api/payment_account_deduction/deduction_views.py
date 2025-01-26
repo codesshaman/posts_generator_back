@@ -4,9 +4,9 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
-from .deduction_model import Deduction
-from .deduction_serializer import DeductionSerializer
-from ..payment_account.payment_model import PaymentAccount
+from .deduction_models import Deduction
+from .deduction_serializers import DeductionSerializer
+from ..payment_account.payment_models import PaymentAccount
 
 
 class DeductionViewSet(

@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 from rest_framework.views import APIView
 from rest_framework import status
-from .currency_model import Currency
+from .currency_models import Currency
 
 
 class UpdateCurrencyRatesAPIView(APIView):

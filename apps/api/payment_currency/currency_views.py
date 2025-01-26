@@ -1,9 +1,9 @@
-from apps.api.payment_account.payment_model import PaymentAccount
+from apps.api.payment_account.payment_models import PaymentAccount
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .currency_model import Currency
+from .currency_models import Currency
 
 
 

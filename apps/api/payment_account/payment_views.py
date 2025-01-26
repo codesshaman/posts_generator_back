@@ -1,5 +1,5 @@
-from .payment_serializer import PaymentAccountSerializer, PositiveBalanceAccountsSerializer
-from .payment_model import PaymentAccount
+from .payment_serializers import PaymentAccountSerializer, PositiveBalanceAccountsSerializer
+from .payment_models import PaymentAccount
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
