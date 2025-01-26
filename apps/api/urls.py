@@ -70,7 +70,6 @@ urlpatterns = [
     }), name='deduction-list'),
     path('payments/<int:account_id>/deductions/<int:pk>/', DeductionViewSet.as_view({
         'get': 'retrieve',          # GET : {{url}}/payments/<acc_id>/deductions/<deduction_id>
-        'put': 'update',            # PUT : {{url}}/payments/<acc_id>/deductions/<deduction_id>
         'delete': 'destroy'         #DELETE:{{url}}/payments/<acc_id>/deductions/<deduction_id>
     }), name='deduction-detail'),
     path('payments/<int:account_id>/deductions/<int:pk>/restore/', DeductionViewSet.as_view({
