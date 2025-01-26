@@ -22,12 +22,19 @@ class DeductionViewSet(
 
     def get_queryset(self):
         """
-        По умолчанию возвращает только активные транзакции.
+        Возвращает только активные транзакции для текущего пользователя.
+        Администраторы видят все транзакции.
         """
+        user = self.request.user
         account_id = self.kwargs['account_id']
-        # Проверяем, существует ли указанный аккаунт
-        if not PaymentAccount.objects.filter(pk=account_id).exists():
-            raise NotFound("Платёжный аккаунт не найден.")
+
+        if user.is_staff:  # Администратор видит все транзакции
+            return Deduction.objects.filter(account_id=account_id)
+
+        # Проверка на владельца аккаунта
+        if not PaymentAccount.objects.filter(account_id=account_id, user=user).exists():
+            raise PermissionDenied("У вас нет доступа к этому платёжному аккаунту.")
+
         return Deduction.objects.filter(is_active=True, account_id=account_id)
 
     @transaction.atomic
@@ -37,6 +44,10 @@ class DeductionViewSet(
         """
         account_id = self.kwargs['account_id']
         account = PaymentAccount.objects.select_for_update().get(pk=account_id)  # Блокируем запись для исключения гонок
+
+        # Проверка на владельца аккаунта
+        if account.user != self.request.user and not self.request.user.is_staff:
+            raise PermissionDenied("Вы не являетесь владельцем этого аккаунта.")
 
         # Проверяем, достаточно ли средств
         amount = serializer.validated_data['amount']
@@ -71,9 +82,11 @@ class DeductionViewSet(
         except Deduction.DoesNotExist:
             raise NotFound("Транзакция не найдена.")
 
-        # Проверяем, принадлежит ли транзакция указанному аккаунту
+        # Проверка, что транзакция принадлежит указанному аккаунту и владельцу
         if deduction.account_id != account_id:
             raise PermissionDenied("Эта транзакция не принадлежит указанному аккаунту.")
+        if deduction.account.user != request.user and not request.user.is_staff:
+            raise PermissionDenied("Вы не являетесь владельцем этого аккаунта.")
 
         # Если транзакция уже удалена, возвращаем ошибку
         if not deduction.is_active:
@@ -95,9 +108,11 @@ class DeductionViewSet(
         # Ищем объект без фильтрации
         deduction = self.get_object_for_restore()
 
-        # Проверяем, принадлежит ли транзакция указанному аккаунту
+        # Проверка, что транзакция принадлежит указанному аккаунту и владельцу
         if deduction.account_id != account_id:
             raise PermissionDenied("Эта транзакция не принадлежит указанному аккаунту.")
+        if deduction.account.user != request.user and not request.user.is_staff:
+            raise PermissionDenied("Вы не являетесь владельцем этого аккаунта.")
 
         # Проверяем, активна ли транзакция
         if deduction.is_active:
