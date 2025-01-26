@@ -20,6 +20,8 @@ class Migration(migrations.Migration):
                 ('plan', models.CharField(max_length=255, unique=True)),
                 ('coins', models.DecimalField(decimal_places=6, max_digits=10)),
                 ('price', models.DecimalField(decimal_places=6, max_digits=10)),
+                ('monthly', models.IntegerField(blank=True, null=True)),
+                ('level', models.IntegerField()),
                 ('description', models.TextField(blank=True, null=True)),
                 ('is_active', models.BooleanField(default=True)),
                 ('is_archived', models.BooleanField(default=False)),
