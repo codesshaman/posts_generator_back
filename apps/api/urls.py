@@ -5,7 +5,7 @@ from .user_account.user_views import UserViewSet, UserRegistrationAPIView
 from .api_tokens.tokens_views import UserTokenViewSet
 from .payment_currency.update_currency import UpdateCurrencyRatesAPIView
 from .payment_currency.currency_views import UserCurrenciesAPIView, AccountCurrencyAPIView, CurrencyRateAPIView
-from .tarification_system.tariff_views import PlanViewSet, UserPlanViewSet
+from .tariffication_system.tariff_views import PlanViewSet, AdminPlanViewSet
 from .promocodes_system.promocode_views import PromoCodeViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .news_system.news_views import NewViewSet
@@ -16,6 +16,7 @@ from django.urls import path, include
 
 # Роутер для автоматического создания маршрутов
 router = DefaultRouter()
+router.register(r'promo', PromoCodeViewSet, basename='promocode')
 
 urlpatterns = [
     path('', include(router.urls)),  # Подключение всех маршрутов из роутера
@@ -63,20 +64,20 @@ urlpatterns = [
         'delete': 'destroy'         # DELETE:
     }), name='refill-detail'),
     path('payments/<int:account_id>/refills/<int:pk>/restore/', RefillViewSet.as_view({
-        'post': 'restore'           # POST: {{url}}/payments/<acc_id>/deductions/<deduction_id>/restore/
+        'post': 'restore'           # POST: {{url}}/api/payments/<acc_id>/deductions/<deduction_id>/restore/
     }), name='deduction-restore'),
 
     # Списания для конкретного аккаунта
     path('payments/<int:account_id>/deductions/', DeductionViewSet.as_view({
-        'get': 'list',              # GET : {{url}}/payments/<acc_id>/deductions/
-        'post': 'create'            # POST: {{url}}/payments/<acc_id>/deductions/
+        'get': 'list',              # GET : {{url}}/api/payments/<acc_id>/deductions/
+        'post': 'create'            # POST: {{url}}/api/payments/<acc_id>/deductions/
     }), name='deduction-list'),
     path('payments/<int:account_id>/deductions/<int:pk>/', DeductionViewSet.as_view({
-        'get': 'retrieve',          # GET : {{url}}/payments/<acc_id>/deductions/<deduction_id>
-        'delete': 'destroy'         #DELETE:{{url}}/payments/<acc_id>/deductions/<deduction_id>
+        'get': 'retrieve',          # GET : {{url}}/api/payments/<acc_id>/deductions/<deduction_id>
+        'delete': 'destroy'         #DELETE:{{url}}/api/payments/<acc_id>/deductions/<deduction_id>
     }), name='deduction-detail'),
     path('payments/<int:account_id>/deductions/<int:pk>/restore/', DeductionViewSet.as_view({
-        'post': 'restore'           # POST: {{url}}/payments/<acc_id>/deductions/<deduction_id>/restore/
+        'post': 'restore'           # POST: {{url}}/api/payments/<acc_id>/deductions/<deduction_id>/restore/
     }), name='deduction-restore'),
 
     # Просмотр всех пополненных счетов (только для админов)
@@ -94,41 +95,48 @@ urlpatterns = [
     # Просмотр курсов любой переданной валюты относительно рубля (POST)
     path('currency/rate/', CurrencyRateAPIView.as_view(), name='currency_rate'),
 
-# Routes for Plan
-    path('plans/', PlanViewSet.as_view({
-        'get': 'list',              # GET :
-        'post': 'create'            # POST:
+    # Просмотр и редактирование тарифных планов администратором
+    path('plans/', AdminPlanViewSet.as_view({
+        'get': 'list',              # GET : {{url}}/api/plans/
+        'post': 'create'            # POST: {{url}}/api/plans/
     }), name='plan-list-create'),
+
+    # Просмотр тарифных планов пользователем
     path('plans/<int:pk>/', PlanViewSet.as_view({
-        'get': 'retrieve',          # GET :
-        'put': 'update',            # PUT :
-        'patch': 'partial_update',  # PATCH :
-        'delete': 'destroy',        # DELETE :
+        'get': 'retrieve',          # GET  : {{url}}/api/plans/<plan_id>
+        'put': 'update',            # PUT  : {{url}}/api/plans/<plan_id>
+        'patch': 'partial_update',  # PATCH :{{url}}/api/plans/<plan_id>
+        'delete': 'destroy',        # DELETE:{{url}}/api/plans/<plan_id>
+    }), name='plan-detail'),
+    path('plans/<int:pk>/restore/', PlanViewSet.as_view({
+        'post': 'restore'           # POST : {{url}}/api/plans/<plan_id>/restore/
     }), name='plan-detail'),
 
-    # Routes for PromoCode
-    path('promocodes/', PromoCodeViewSet.as_view({
-        'get': 'list',              # GET :
-        'post': 'create'            # POST:
+    # Создание, просмотр и изменение промокодов администратором
+    path('promo/', PromoCodeViewSet.as_view({
+        'get': 'list',              # GET : {{url}}/api/promo/
+        'post': 'create'            # POST: {{url}}/api/promo/
     }), name='promocode-list-create'),
-    path('promocodes/<int:pk>/', PromoCodeViewSet.as_view({
-        'get': 'retrieve',          # GET :
-        'put': 'update',            # PUT :
-        'patch': 'partial_update',  # PATCH :
-        'delete': 'destroy',        # DELETE :
+    path('promo/<promo_id>/', PromoCodeViewSet.as_view({
+        'get': 'retrieve',          # GET :  {{url}}/api/promo/<promo_id>/
+        'put': 'update',            # PUT :  {{url}}/api/promo/<promo_id>/
+        'patch': 'partial_update',  # PATCH :{{url}}/api/promo/<promo_id>/
+        'delete': 'destroy'         # DELETE:{{url}}/api/promo/<promo_id>/
     }), name='promocode-detail'),
+    path('promo/<promo_id>/archive/', PromoCodeViewSet.as_view({
+        'patch': 'archive'          # PATCH :{{url}}/api/promo/<promo_id>/archive/
+    }), name='promocode-archive'),
+    path('promo/<promo_id>/unarchive/', PromoCodeViewSet.as_view({
+        'patch': 'unarchive'        # PATCH :{{url}}/api/promo/<promo_id>/unarchive/
+    }), name='promocode-unarchive'),
+    path('promo/<promo_id>/restore/', PromoCodeViewSet.as_view({
+        'patch': 'restore'          # PATCH :{{url}}/api/promo/<promo_id>/restore/
+    }), name='promocode-restore'),
 
-    # Routes for UserPlan
-    path('userplans/', UserPlanViewSet.as_view({
-        'get': 'list',              # GET :
-        'post': 'create'            # POST:
-    }), name='userplan-list-create'),
-    path('userplans/<int:pk>/', UserPlanViewSet.as_view({
-        'get': 'retrieve',          # GET :
-        'put': 'update',            # PUT :
-        'patch': 'partial_update',  # PATCH :
-        'delete': 'destroy',        # DELETE :
-    }), name='userplan-detail'),
+    # Просмотр деталей промокода пользователем
+    path('promo/get_by_code/', PromoCodeViewSet.as_view({
+        'post': 'get_by_code'       # POST: {{url}}/api/promo/get_by_code/
+    }), name='get-by-code'),
 
     # User accounts
     path('im/', UserViewSet.as_view({
