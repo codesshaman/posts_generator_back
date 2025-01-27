@@ -1,4 +1,4 @@
-from ..user_wallet.wallet_models import Wallet
+from .wallet_deduction_models import WalletDeduction
 from rest_framework import serializers
 
 
@@ -13,7 +13,7 @@ class WalletDeductionSerializer(serializers.ModelSerializer):
     wallet = serializers.PrimaryKeyRelatedField(read_only=True)  # wallet_id только для чтения
 
     class Meta:
-        model = Wallet
+        model = WalletDeduction
         fields = ['deduction_id', 'wallet', 'amount', 'deduction_time', 'current_balance', 'is_active', 'wallet_balance']
 
     def to_representation(self, instance):

@@ -20,4 +20,4 @@ class WalletRefill(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Refill {self.refill_id} for account {self.wallet.wallet_id} of amount {self.amount}"
+        return f"Refill {self.refill_id} for wallet {self.wallet.wallet_id} of amount {self.amount}"

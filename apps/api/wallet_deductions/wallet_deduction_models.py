@@ -20,4 +20,4 @@ class WalletDeduction(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Deduction {self.deduction_id} for account {self.wallet.wallet_id} of amount {self.amount}"
+        return f"Deduction {self.deduction_id} for wallet {self.wallet.wallet_id} of amount {self.amount}"

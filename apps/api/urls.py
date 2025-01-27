@@ -11,6 +11,7 @@ from .promocodes_system.promocode_views import PromoCodeViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .news_system.news_views import NewViewSet
 from .wallet_refills.wallet_refill_views import WalletRefillViewSet
+from .wallet_deductions.wallet_deduction_views import WalletDeductionViewSet
 from apps.mail.acc_activation.activation_view import activate_account
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
@@ -163,9 +164,23 @@ urlpatterns = [
         'delete': 'destroy'         # DELETE:{{url}}/api/wallet/<int:wallet_id>/refills/<int:pk>/
     }), name='refill-detail'),
     path('wallet/<int:wallet_id>/refills/<int:pk>/restore/', WalletRefillViewSet.as_view({
-        'post': 'restore'           # POST: {{url}}/api/wallet/<acc_id>/deductions/<deduction_id>/restore/
+        'post': 'restore'           # POST: {{url}}/api/wallet/<acc_id>/refills/<deduction_id>/restore/
     }), name='deduction-restore'),
 
+    # Списания для конкретного кошелька
+    path('wallet/deductions/', WalletDeductionViewSet.as_view({  # Не работает, переписать, выдаёт всё
+        'get': 'list'               # GET : {{url}}/api/wallet/
+    }), name='refill-list'),
+    path('wallet/<int:wallet_id>/deductions/', WalletDeductionViewSet.as_view({  # Не работает, переписать, выдаёт всё
+        'post': 'create',           # POST:  {{url}}/api/wallet/<int:wallet_id>/deductions/
+    }), name='refill-list'),
+    path('wallet/<int:wallet_id>/deductions/<int:pk>/', WalletDeductionViewSet.as_view({
+        'get': 'retrieve',          # GET :  {{url}}/api/wallet/<int:wallet_id>/deductions/<int:pk>/
+        'delete': 'destroy'         # DELETE:{{url}}/api/wallet/<int:wallet_id>/deductions/<int:pk>/
+    }), name='refill-detail'),
+    path('wallet/<int:wallet_id>/deductions/<int:pk>/restore/', WalletDeductionViewSet.as_view({
+        'post': 'restore'           # POST: {{url}}/api/wallet/<acc_id>/deductions/<deduction_id>/restore/
+    }), name='deduction-restore'),
 
     # User accounts
     path('im/', UserViewSet.as_view({

@@ -6,10 +6,10 @@ from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 from .wallet_deduction_models import WalletDeduction
 from .wallet_deduction_serializers import WalletDeductionSerializer
-from ..payment_account.payment_models import PaymentAccount
+from ..user_wallet.wallet_models import Wallet
 
 
-class DeductionViewSet(
+class WalletDeductionViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -26,40 +26,43 @@ class DeductionViewSet(
         Администраторы видят все транзакции.
         """
         user = self.request.user
-        account_id = self.kwargs['account_id']
+        # wallet_id = self.kwargs['wallet_id']
 
         if user.is_staff:  # Администратор видит все транзакции
-            return WalletDeduction.objects.filter(account_id=account_id)
+            # return WalletDeduction.objects.filter(wallet_id=wallet_id)
+            return WalletDeduction.objects.filter()
 
-        # Проверка на владельца аккаунта
-        if not PaymentAccount.objects.filter(account_id=account_id, user=user).exists():
-            raise PermissionDenied("У вас нет доступа к этому платёжному аккаунту.")
+        # Проверка на владельца кошелька
+        # if not Wallet.objects.filter(wallet_id=wallet_id, user=user).exists():
+        if not Wallet.objects.filter(user=user).exists():
+            raise PermissionDenied("У вас нет доступа к этому платёжному кошельку.")
 
-        return WalletDeduction.objects.filter(is_active=True, account_id=account_id)
+        # return WalletDeduction.objects.filter(is_active=True, wallet_id=wallet_id)
+        return WalletDeduction.objects.filter(is_active=True)
 
     @transaction.atomic
     def perform_create(self, serializer):
         """
-        Создает списание и уменьшает баланс платёжного аккаунта.
+        Создает списание и уменьшает баланс платёжного кошелька.
         """
-        account_id = self.kwargs['account_id']
-        account = PaymentAccount.objects.select_for_update().get(pk=account_id)  # Блокируем запись для исключения гонок
+        wallet_id = self.kwargs['wallet_id']
+        wallet = Wallet.objects.select_for_update().get(pk=wallet_id)  # Блокируем запись для исключения гонок
 
-        # Проверка на владельца аккаунта
-        if account.user != self.request.user and not self.request.user.is_staff:
-            raise PermissionDenied("Вы не являетесь владельцем этого аккаунта.")
+        # Проверка на владельца кошелька
+        if wallet.user != self.request.user and not self.request.user.is_staff:
+            raise PermissionDenied("Вы не являетесь владельцем этого кошелька.")
 
         # Проверяем, достаточно ли средств
         amount = serializer.validated_data['amount']
-        if account.balance < amount:
-            raise ValidationError({"detail": "Недостаточно средств на платёжном аккаунте."})
+        if wallet.balance < amount:
+            raise ValidationError({"detail": "Недостаточно средств на платёжном кошельке."})
 
-        # Уменьшаем баланс аккаунта
-        account.balance -= amount
-        account.save()
+        # Уменьшаем баланс кошелька
+        wallet.balance -= amount
+        wallet.save()
 
         # Создаем списание
-        serializer.save(account_id=account_id)
+        serializer.save(wallet_id=wallet_id)
 
     def get_object_for_restore(self):
         """
@@ -72,7 +75,7 @@ class DeductionViewSet(
             raise NotFound("Транзакция не найдена.")
 
     @action(detail=True, methods=['post'])
-    def destroy(self, request, account_id=None, pk=None):
+    def destroy(self, request, wallet_id=None, pk=None):
         """
         Мягкое удаление транзакции.
         """
@@ -82,11 +85,11 @@ class DeductionViewSet(
         except WalletDeduction.DoesNotExist:
             raise NotFound("Транзакция не найдена.")
 
-        # Проверка, что транзакция принадлежит указанному аккаунту и владельцу
-        if deduction.account_id != account_id:
-            raise PermissionDenied("Эта транзакция не принадлежит указанному аккаунту.")
-        if deduction.account.user != request.user and not request.user.is_staff:
-            raise PermissionDenied("Вы не являетесь владельцем этого аккаунта.")
+        # Проверка, что транзакция принадлежит указанному кошельку и владельцу
+        if deduction.wallet_id != wallet_id:
+            raise PermissionDenied("Эта транзакция не принадлежит указанному кошельку.")
+        if deduction.wallet.user != request.user and not request.user.is_staff:
+            raise PermissionDenied("Вы не являетесь владельцем этого кошелька.")
 
         # Если транзакция уже удалена, возвращаем ошибку
         if not deduction.is_active:
@@ -101,18 +104,18 @@ class DeductionViewSet(
         )
 
     @action(detail=True, methods=['post'])
-    def restore(self, request, account_id=None, pk=None):
+    def restore(self, request, wallet_id=None, pk=None):
         """
         Восстанавливает мягко удалённую транзакцию.
         """
         # Ищем объект без фильтрации
         deduction = self.get_object_for_restore()
 
-        # Проверка, что транзакция принадлежит указанному аккаунту и владельцу
-        if deduction.account_id != account_id:
-            raise PermissionDenied("Эта транзакция не принадлежит указанному аккаунту.")
-        if deduction.account.user != request.user and not request.user.is_staff:
-            raise PermissionDenied("Вы не являетесь владельцем этого аккаунта.")
+        # Проверка, что транзакция принадлежит указанному кошельку и владельцу
+        if deduction.wallet_id != wallet_id:
+            raise PermissionDenied("Эта транзакция не принадлежит указанному кошельку.")
+        if deduction.wallet.user != request.user and not request.user.is_staff:
+            raise PermissionDenied("Вы не являетесь владельцем этого кошелька.")
 
         # Проверяем, активна ли транзакция
         if deduction.is_active:
