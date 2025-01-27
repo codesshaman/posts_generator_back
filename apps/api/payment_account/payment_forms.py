@@ -1,7 +1,7 @@
 from django import forms
 from .payment_models import PaymentAccount
-from ..payment_account_refill.refill_models import Refill
-from ..payment_account_deduction.deduction_models import Deduction
+from ..payment_account_refills.refill_models import Refill
+from ..payment_account_deductions.deduction_models import Deduction
 
 class PaymentAccountForm(forms.ModelForm):
     class Meta:

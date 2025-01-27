@@ -1,6 +1,7 @@
 from .payment_account.payment_views import PaymentAccountViewSet, PaymentAccountsViewSet, PositiveBalanceAccountsView
-from .payment_account_deduction.deduction_views import DeductionViewSet
-from .payment_account_refill.refill_views import RefillViewSet
+from .user_wallet.wallet_views import WalletDetailViewSet, WalletViewSet
+from .payment_account_deductions.deduction_views import DeductionViewSet
+from .payment_account_refills.refill_views import RefillViewSet
 from .user_account.user_views import UserViewSet, UserRegistrationAPIView
 from .api_tokens.tokens_views import UserTokenViewSet
 from .payment_currency.update_currency import UpdateCurrencyRatesAPIView
@@ -9,6 +10,7 @@ from .tariffication_system.tariff_views import PlanViewSet, AdminPlanViewSet
 from .promocodes_system.promocode_views import PromoCodeViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .news_system.news_views import NewViewSet
+from .wallet_refills.wallet_refill_views import WalletRefillViewSet
 from apps.mail.acc_activation.activation_view import activate_account
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
@@ -137,6 +139,33 @@ urlpatterns = [
     path('promo/get_by_code/', PromoCodeViewSet.as_view({
         'post': 'get_by_code'       # POST: {{url}}/api/promo/get_by_code/
     }), name='get-by-code'),
+
+    # Кошелёк коинов
+    path('wallet/', WalletViewSet.as_view({
+        'get': 'list',              # GET : {{url}}/api/wallet/
+        'post': 'create'            # POST: {{url}}/api/wallet/
+    }), name='wallet-create'),
+    path('wallet/<int:pk>/', WalletDetailViewSet.as_view({
+        'get': 'retrieve',          # GET :  {{url}}/api/wallet/<wallet_id>/
+        'delete': 'destroy',        # DELETE:{{url}}/api/wallet/<wallet_id>/
+        'patch': 'activate'         # PATCH: {{url}}/api/wallet/<wallet_id>/
+    }), name='wallet-detail'),
+
+    # Пополнения для конкретного кошелька
+    path('wallet/refills/', WalletRefillViewSet.as_view({  # Не работает, переписать, выдаёт всё
+        'get': 'list'               # GET : {{url}}/api/wallet/
+    }), name='refill-list'),
+    path('wallet/<int:wallet_id>/refills/', WalletRefillViewSet.as_view({  # Не работает, переписать, выдаёт всё
+        'post': 'create',           # POST:  {{url}}/api/wallet/<int:wallet_id>/refills/
+    }), name='refill-list'),
+    path('wallet/<int:wallet_id>/refills/<int:pk>/', WalletRefillViewSet.as_view({
+        'get': 'retrieve',          # GET :  {{url}}/api/wallet/<int:wallet_id>/refills/<int:pk>/
+        'delete': 'destroy'         # DELETE:{{url}}/api/wallet/<int:wallet_id>/refills/<int:pk>/
+    }), name='refill-detail'),
+    path('wallet/<int:wallet_id>/refills/<int:pk>/restore/', WalletRefillViewSet.as_view({
+        'post': 'restore'           # POST: {{url}}/api/wallet/<acc_id>/deductions/<deduction_id>/restore/
+    }), name='deduction-restore'),
+
 
     # User accounts
     path('im/', UserViewSet.as_view({
