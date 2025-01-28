@@ -4,6 +4,7 @@ from .payment_account_deductions.deduction_views import DeductionViewSet
 from .payment_account_refills.refill_views import RefillViewSet
 from .user_account.user_views import UserViewSet, UserRegistrationAPIView
 from .api_tokens.tokens_views import UserTokenViewSet
+from .purchase_coins.coins_purchase import CoinPurchaseAPIView
 from .payment_currency.update_currency import UpdateCurrencyRatesAPIView
 from .payment_currency.currency_views import UserCurrenciesAPIView, AccountCurrencyAPIView, CurrencyRateAPIView
 from .tariffication_system.tariff_views import PlanViewSet, AdminPlanViewSet
@@ -82,6 +83,9 @@ urlpatterns = [
     path('payments/<int:account_id>/deductions/<int:pk>/restore/', DeductionViewSet.as_view({
         'post': 'restore'           # POST: {{url}}/api/payments/<acc_id>/deductions/<deduction_id>/restore/
     }), name='deduction-restore'),
+
+    # Покупка коинов за любую валюту для обычного пользователя
+    path('wallet/purchase/', CoinPurchaseAPIView.as_view(), name='coins_purchase'),
 
     # Просмотр всех пополненных счетов (только для админов)
     path('positive-balance-accounts/', PositiveBalanceAccountsView.as_view(), name='positive-balance-accounts'),

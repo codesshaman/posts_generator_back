@@ -79,8 +79,8 @@ class PromoCodeViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Promo code is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            promo = PromoCode.objects.get(code=code, is_active=True)
+            promo = PromoCode.objects.get(code=code, is_active=True, is_archived=False)
             serializer = self.get_serializer(promo)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except PromoCode.DoesNotExist:
-            return Response({"detail": "Promo code not found or inactive."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Promo code not found or archived."}, status=status.HTTP_404_NOT_FOUND)
