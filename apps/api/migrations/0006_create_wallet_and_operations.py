@@ -20,6 +20,7 @@ class Migration(migrations.Migration):
                 ('wallet_id', models.AutoField(primary_key=True, serialize=False)),
                 ('balance', models.DecimalField(decimal_places=6, default=0.0, max_digits=20)),
                 ('status', models.CharField(max_length=20)),
+                ('promo_codes', models.JSONField(default=list)),
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),

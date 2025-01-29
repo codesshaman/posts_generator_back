@@ -156,35 +156,35 @@ urlpatterns = [
         'patch': 'activate'         # PATCH: {{url}}/api/wallet/<wallet_id>/
     }), name='wallet-detail'),
 
-    # Пополнения для конкретного кошелька
-    path('wallet/refills/', WalletRefillViewSet.as_view({  # Не работает, переписать, выдаёт всё
-        'get': 'list'               # GET : {{url}}/api/wallet/
-    }), name='refill-list'),
-    path('wallet/<int:wallet_id>/refills/', WalletRefillViewSet.as_view({  # Не работает, переписать, выдаёт всё
-        'post': 'create',           # POST:  {{url}}/api/wallet/<int:wallet_id>/refills/
-    }), name='refill-list'),
-    path('wallet/<int:wallet_id>/refills/<int:pk>/', WalletRefillViewSet.as_view({
-        'get': 'retrieve',          # GET :  {{url}}/api/wallet/<int:wallet_id>/refills/<int:pk>/
-        'delete': 'destroy'         # DELETE:{{url}}/api/wallet/<int:wallet_id>/refills/<int:pk>/
-    }), name='refill-detail'),
-    path('wallet/<int:wallet_id>/refills/<int:pk>/restore/', WalletRefillViewSet.as_view({
-        'post': 'restore'           # POST: {{url}}/api/wallet/<acc_id>/refills/<deduction_id>/restore/
-    }), name='deduction-restore'),
-
-    # Списания для конкретного кошелька
-    path('wallet/deductions/', WalletDeductionViewSet.as_view({  # Не работает, переписать, выдаёт всё
-        'get': 'list'               # GET : {{url}}/api/wallet/
-    }), name='refill-list'),
-    path('wallet/<int:wallet_id>/deductions/', WalletDeductionViewSet.as_view({  # Не работает, переписать, выдаёт всё
-        'post': 'create',           # POST:  {{url}}/api/wallet/<int:wallet_id>/deductions/
-    }), name='refill-list'),
-    path('wallet/<int:wallet_id>/deductions/<int:pk>/', WalletDeductionViewSet.as_view({
-        'get': 'retrieve',          # GET :  {{url}}/api/wallet/<int:wallet_id>/deductions/<int:pk>/
-        'delete': 'destroy'         # DELETE:{{url}}/api/wallet/<int:wallet_id>/deductions/<int:pk>/
-    }), name='refill-detail'),
-    path('wallet/<int:wallet_id>/deductions/<int:pk>/restore/', WalletDeductionViewSet.as_view({
-        'post': 'restore'           # POST: {{url}}/api/wallet/<acc_id>/deductions/<deduction_id>/restore/
-    }), name='deduction-restore'),
+    # Пополнения для конкретного кошелька (ТОЛЬКО ДЛЯ ТЕСТОВ! ПОТЕНЦИАЛЬНАЯ УЯЗВИМОСТЬ)
+    # path('wallet/refills/', WalletRefillViewSet.as_view({
+    #     'get': 'list'               # GET : {{url}}/api/wallet/
+    # }), name='refill-list'),
+    # path('wallet/<int:wallet_id>/refills/', WalletRefillViewSet.as_view({
+    #     'post': 'create',           # POST:  {{url}}/api/wallet/<int:wallet_id>/refills/
+    # }), name='refill-list'),
+    # path('wallet/<int:wallet_id>/refills/<int:pk>/', WalletRefillViewSet.as_view({
+    #     'get': 'retrieve',          # GET :  {{url}}/api/wallet/<int:wallet_id>/refills/<int:pk>/
+    #     'delete': 'destroy'         # DELETE:{{url}}/api/wallet/<int:wallet_id>/refills/<int:pk>/
+    # }), name='refill-detail'),
+    # path('wallet/<int:wallet_id>/refills/<int:pk>/restore/', WalletRefillViewSet.as_view({
+    #     'post': 'restore'           # POST: {{url}}/api/wallet/<acc_id>/refills/<deduction_id>/restore/
+    # }), name='deduction-restore'),
+    #
+    # # Списания для конкретного кошелька (ТОЛЬКО ДЛЯ ТЕСТОВ! ПОТЕНЦИАЛЬНАЯ УЯЗВИМОСТЬ)
+    # path('wallet/deductions/', WalletDeductionViewSet.as_view({
+    #     'get': 'list'               # GET : {{url}}/api/wallet/
+    # }), name='refill-list'),
+    # path('wallet/<int:wallet_id>/deductions/', WalletDeductionViewSet.as_view({  # Не работает, переписать, выдаёт всё
+    #     'post': 'create',           # POST:  {{url}}/api/wallet/<int:wallet_id>/deductions/
+    # }), name='refill-list'),
+    # path('wallet/<int:wallet_id>/deductions/<int:pk>/', WalletDeductionViewSet.as_view({
+    #     'get': 'retrieve',          # GET :  {{url}}/api/wallet/<int:wallet_id>/deductions/<int:pk>/
+    #     'delete': 'destroy'         # DELETE:{{url}}/api/wallet/<int:wallet_id>/deductions/<int:pk>/
+    # }), name='refill-detail'),
+    # path('wallet/<int:wallet_id>/deductions/<int:pk>/restore/', WalletDeductionViewSet.as_view({
+    #     'post': 'restore'           # POST: {{url}}/api/wallet/<acc_id>/deductions/<deduction_id>/restore/
+    # }), name='deduction-restore'),
 
     # User accounts
     path('im/', UserViewSet.as_view({

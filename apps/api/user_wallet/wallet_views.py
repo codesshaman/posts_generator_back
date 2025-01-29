@@ -38,7 +38,7 @@ class WalletViewSet(
             raise ValidationError(f"Кошелёк для данного пользователя уже существует.")
 
         # Создаём новый кошелёк
-        serializer.save(user=user)
+        serializer.save(user=user, is_active=True, balance=0.000000)
 
 class WalletDetailViewSet(
     viewsets.GenericViewSet,
@@ -64,18 +64,18 @@ class WalletDetailViewSet(
         # Обычный пользователь видит только свои кошельки
         return Wallet.objects.filter(user=user)
 
-    def perform_create(self, serializer):
-        """
-        Создаёт новый кошелёк для пользователя.
-        """
-        user = self.request.user
-
-        # Проверяем, существует ли уже кошелёк пользователя
-        if Wallet.objects.filter(user=user).exists():
-            raise ValidationError(f"Кошелёк для данного пользователя уже существует.")
-
-        # Создаём новый платёжный аккаунт
-        serializer.save(user=user, is_active=True)
+    # def perform_create(self, serializer):
+    #     """
+    #     Создаёт новый кошелёк для пользователя.
+    #     """
+    #     user = self.request.user
+    #
+    #     # Проверяем, существует ли уже кошелёк пользователя
+    #     if Wallet.objects.filter(user=user).exists():
+    #         raise ValidationError(f"Кошелёк для данного пользователя уже существует.")
+    #
+    #     # Создаём новый платёжный аккаунт
+    #     serializer.save(user=user, is_active=True, balance=0.000000)
 
     def destroy(self, request, *args, **kwargs):
         """
