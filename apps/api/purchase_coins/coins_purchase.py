@@ -19,90 +19,76 @@ class CoinPurchaseAPIView(APIView):
         user = request.user
         data = request.data
 
-        # Получение данных из запроса
-        code = data.get("code")  # Промокод (необязательное поле)
-        currency = data.get("currency")  # Валюта (обязательное поле)
-        plan_name = data.get("plan")  # Тариф (обязательное поле)
+        currency = data.get("currency")
+        plan_name = data.get("plan")
+        code = data.get("code", None)
 
         if not currency:
             raise ValidationError({"currency": "Это поле обязательно."})
         if not plan_name:
             raise ValidationError({"plan": "Это поле обязательно."})
 
-        # Получение тарифа
+        # Получаем тариф
         try:
             plan = Plan.objects.get(plan=plan_name, is_active=True, is_archived=False)
         except Plan.DoesNotExist:
             raise ValidationError({"plan": "Указанный тариф не найден или неактивен."})
 
         plan_price = plan.price
-        promo_discount = 1.000000
+        promo_discount = Decimal("1.000000")
 
-        # Применение промокода, если указан
+        # Проверяем промокод, если передан
         if code:
             try:
                 promo_code = PromoCode.objects.get(code=code, is_active=True, is_archived=False)
-                promo_discount = promo_code.promo_discount
+                promo_discount = Decimal(promo_code.promo_discount)
             except PromoCode.DoesNotExist:
-                pass  # Промокод не найден, скидка не применяется
+                pass  # Игнорируем, если промокод не найден
 
-        # Получение платёжного аккаунта
-        try:
-            payment_account = PaymentAccount.objects.get(user=user, currency=currency, is_active=True)
-        except PaymentAccount.DoesNotExist:
-            raise ValidationError({"account": "Платёжный аккаунт с указанной валютой не найден."})
-
-        # Приведение promo_discount к Decimal
-        promo_discount = Decimal(promo_discount)
-        # Расчёт итоговой стоимости тарифа с учётом скидки
+        # Рассчитываем итоговую стоимость
         discounted_price = (plan_price * promo_discount).quantize(Decimal("0.000000"), rounding=ROUND_DOWN)
-        # Для валюты RUB
-        if currency == "RUB":
-            if payment_account.balance < discounted_price:
-                raise ValidationError({"balance": "Недостаточно средств на платёжном аккаунте."})
 
-            # Выполнение транзакции
-            with transaction.atomic():
+        with transaction.atomic():
+            # 🔴 Блокируем запись платежного аккаунта
+            try:
+                payment_account = PaymentAccount.objects.select_for_update().get(
+                    user=user, currency=currency, is_active=True
+                )
+            except PaymentAccount.DoesNotExist:
+                raise ValidationError({"account": "Платёжный аккаунт с указанной валютой не найден."})
+
+            if currency == "RUB":
+                if payment_account.balance < discounted_price:
+                    raise ValidationError({"balance": "Недостаточно средств на платёжном аккаунте."})
+
+                # Списываем средства
                 payment_account.balance -= discounted_price
                 payment_account.save()
-
+            else:
+                # Получаем курс валют
                 try:
-                    wallet = Wallet.objects.get(user=user, is_active=True)
-                except Wallet.DoesNotExist:
-                    return Response(
-                        {"error": "У пользователя нет активного кошелька."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                wallet.balance += plan.coins
-                wallet.save()
+                    currency_rate = Currency.objects.get(code=currency, is_active=True).rate
+                except Currency.DoesNotExist:
+                    raise ValidationError({"currency": "Указанная валюта не поддерживается."})
 
-        else:
-            # Для других валют
-            try:
-                currency_rate = Currency.objects.get(code=currency, is_active=True).rate
-            except Currency.DoesNotExist:
-                raise ValidationError({"currency": "Указанная валюта не поддерживается."})
-            # Конвертация стоимости в рубли
-            # balance_in_rub = payment_account.balance * currency_rate
-            balance_in_rub = (payment_account.balance / currency_rate).quantize(Decimal("0.000000"), rounding=ROUND_DOWN)
-            if balance_in_rub < discounted_price:
-                raise ValidationError({"balance": "Недостаточно средств на платёжном аккаунте (с учётом курса валют)."})
+                # Конвертация стоимости в рубли
+                balance_in_rub = (payment_account.balance / currency_rate).quantize(Decimal("0.000000"), rounding=ROUND_DOWN)
+                if balance_in_rub < discounted_price:
+                    raise ValidationError({"balance": "Недостаточно средств на платёжном аккаунте (с учётом курса валют)."})
 
-            # Выполнение транзакции
-            with transaction.atomic():
+                # Списываем средства в оригинальной валюте
                 deductible_summ = (discounted_price * currency_rate).quantize(Decimal("0.000000"), rounding=ROUND_DOWN)
                 payment_account.balance -= deductible_summ
                 payment_account.save()
 
-                try:
-                    wallet = Wallet.objects.get(user=user, is_active=True)
-                except Wallet.DoesNotExist:
-                    return Response(
-                        {"error": "У пользователя нет активного кошелька."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                wallet.balance += plan.coins
-                wallet.save()
+            # 🔴 Блокируем запись кошелька пользователя
+            try:
+                wallet = Wallet.objects.select_for_update().get(user=user, is_active=True)
+            except Wallet.DoesNotExist:
+                raise ValidationError({"error": "У пользователя нет активного кошелька."})
+
+            wallet.balance += plan.coins
+            wallet.save()
 
         return Response({
             "success": True,
