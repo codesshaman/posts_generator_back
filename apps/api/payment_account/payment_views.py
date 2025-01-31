@@ -1,11 +1,13 @@
 from .payment_serializers import PaymentAccountSerializer, PositiveBalanceAccountsSerializer
-from .payment_models import PaymentAccount
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import  IsAdminUser
+from ..permissions import ZUserTokenPermission
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins
+from .payment_models import PaymentAccount
 from rest_framework.views import APIView
+
 
 
 class PaymentAccountViewSet(
@@ -17,7 +19,7 @@ class PaymentAccountViewSet(
     Представление для управления платёжными аккаунтами.
     """
     serializer_class = PaymentAccountSerializer
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [ZUserTokenPermission]
 
     def get_queryset(self):
         """
@@ -52,7 +54,7 @@ class PaymentAccountsViewSet(
     Представление для управления платёжными аккаунтами.
     """
     serializer_class = PaymentAccountSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def get_queryset(self):
         """
@@ -140,7 +142,7 @@ class PaymentAccountsViewSet(
 
 
 class PositiveBalanceAccountsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def get(self, request, *args, **kwargs):
         """

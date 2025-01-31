@@ -1,8 +1,8 @@
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
 from .tokens_serializers import UserTokenSerializer
 from django.utils.timezone import now, timedelta
 from django.shortcuts import get_object_or_404
+from ..permissions import ZUserTokenPermission
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from django.db import IntegrityError
@@ -15,7 +15,7 @@ class UserTokenViewSet(ViewSet):
     - Пользователи могут управлять только своими токенами.
     - Администраторы могут управлять любыми токенами.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ZUserTokenPermission]
 
 
     def get_queryset(self):

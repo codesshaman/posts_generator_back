@@ -1,8 +1,8 @@
 from .user_serializers import UserSerializer, UserRegistrationSerializer
 from rest_framework import generics, permissions, status, viewsets, views
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny
+from ..permissions import ZUserTokenPermission
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -29,7 +29,7 @@ class UserRegistrationAPIView(views.APIView):
 
 
 class UserViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ZUserTokenPermission]
 
     def get_object(self, pk=None):
         """

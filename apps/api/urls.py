@@ -7,7 +7,7 @@ from .api_tokens.tokens_views import UserTokenViewSet
 from .purchase_coins.coins_purchase import CoinPurchaseAPIView
 from .payment_currency.update_currency import UpdateCurrencyRatesAPIView
 from .payment_currency.currency_views import UserCurrenciesAPIView, AccountCurrencyAPIView, CurrencyRateAPIView
-from .tariffication_system.tariff_views import PlanViewSet, AdminPlanViewSet
+from .tariffication_system.tariff_views import PlanViewSet, AdminPlanViewSet, UserPlanViewSet
 from .promocodes_system.promocode_views import PromoCodeViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .news_system.news_views import NewViewSet
@@ -108,16 +108,31 @@ urlpatterns = [
         'post': 'create'            # POST: {{url}}/api/plans/
     }), name='plan-list-create'),
 
-    # Просмотр тарифных планов пользователем
+    # Редактирование, архивирование, удаление, обновление администратором
     path('plans/<int:pk>/', PlanViewSet.as_view({
-        'get': 'retrieve',          # GET  : {{url}}/api/plans/<plan_id>
-        'put': 'update',            # PUT  : {{url}}/api/plans/<plan_id>
-        'patch': 'partial_update',  # PATCH :{{url}}/api/plans/<plan_id>
-        'delete': 'destroy',        # DELETE:{{url}}/api/plans/<plan_id>
+        'get': 'retrieve',          # GET  : {{url}}/api/plans/<plan_id>/
+        'put': 'update',            # PUT  : {{url}}/api/plans/<plan_id>/
+        'patch': 'partial_update',  # PATCH :{{url}}/api/plans/<plan_id>/
+        'delete': 'destroy',        # DELETE:{{url}}/api/plans/<plan_id>/
     }), name='plan-detail'),
+    # Восстановление удалённого тарифа администратором
     path('plans/<int:pk>/restore/', PlanViewSet.as_view({
         'post': 'restore'           # POST : {{url}}/api/plans/<plan_id>/restore/
     }), name='plan-detail'),
+    # Архивирование и разархивирование администратором
+    path('plans/<int:pk>/archive/', PlanViewSet.as_view({
+        'post': 'archive'           # POST : {{url}}/api/plans/<plan_id>/archive/
+    }), name='plan-archive'),
+    path('plans/<int:pk>/unarchive/', PlanViewSet.as_view({
+        'post': 'unarchive'           # POST : {{url}}/api/plans/<plan_id>/unarchive/
+    }), name='plan-unarchive'),
+
+    # Просмотр всех тарифов пользователем
+    path('plans/get/', UserPlanViewSet.as_view({
+        'get': 'get',               # GET  : {{url}}/api/plans/get/
+    }), name='get-active-plans'),
+
+
 
     # Создание, просмотр и изменение промокодов администратором
     path('promo/', PromoCodeViewSet.as_view({
