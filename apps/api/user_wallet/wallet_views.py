@@ -1,11 +1,13 @@
 from .wallet_serializers import WalletSerializer, PositiveBalanceWalletsSerializer
-from .wallet_models import Wallet
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
+from ..permissions import ZUserTokenPermission
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins
 from rest_framework.views import APIView
+from rest_framework import status
+from .wallet_models import Wallet
 
 
 class WalletViewSet(
@@ -17,7 +19,7 @@ class WalletViewSet(
     Представление для управления кошельками.
     """
     serializer_class = WalletSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ZUserTokenPermission]
 
     def get_queryset(self):
         """
@@ -51,7 +53,7 @@ class WalletDetailViewSet(
     Представление для управления кошельками.
     """
     serializer_class = WalletSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ZUserTokenPermission]
 
     def get_queryset(self):
         """
@@ -91,29 +93,38 @@ class WalletDetailViewSet(
             )
 
         # Мягкое удаление
+        instance.status = "deleted"
         instance.is_active = False
-        instance.save()
+        instance.save(update_fields=["is_active", "status"])
 
         return Response({"detail": "Кошелёк успешно деактивирован."}, status=204)
 
     def activate(self, request, *args, **kwargs):
         """
-        Мягкое восстановление кошелька: устанавливает is_active=True.
+        Восстанавливает (активирует) только неактивные кошельки (is_active=False).
         """
         instance = self.get_object()
+
+        # Проверяем, является ли кошелек неактивным
+        if instance.is_active:
+            return Response(
+                {"detail": "Этот кошелёк уже активен."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Проверяем, имеет ли пользователь права на восстановление
         if not request.user.is_staff and instance.user != request.user:
             return Response(
                 {"detail": "У вас нет прав на восстановление этого кошелька."},
-                status=403
+                status=status.HTTP_403_FORBIDDEN
             )
 
-        # Мягкое восстановление
+        # Восстанавливаем кошелёк
+        instance.status = "active"
         instance.is_active = True
-        instance.save()
+        instance.save(update_fields=["is_active", "status"])
 
-        return Response({"detail": "Кошелёк успешно восстановлен."}, status=204)
+        return Response({"detail": "Кошелёк успешно восстановлен."}, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         """
@@ -138,7 +149,7 @@ class WalletDetailViewSet(
 
 
 class PositiveBalanceWalletsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ZUserTokenPermission]
 
     def get(self, request, *args, **kwargs):
         """

@@ -17,7 +17,7 @@ class PaymentAccountViewSet(
     Представление для управления платёжными аккаунтами.
     """
     serializer_class = PaymentAccountSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ]
 
     def get_queryset(self):
         """
