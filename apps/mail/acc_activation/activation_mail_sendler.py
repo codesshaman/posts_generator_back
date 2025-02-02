@@ -1,5 +1,8 @@
+from pyexpat.errors import messages
+
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
+from project.language import fs_translator
 from django.core.mail import send_mail
 from django.urls import reverse
 
@@ -27,7 +30,13 @@ def send_activation_email(user, request):
 
     # Тема письма и его содержание
     subject = "Активируйте ваш аккаунт"
-    message = f"Hi {user.login},\n\nPlease activate your account using the link below:\n{activation_link}\n\nThank you!"
+    message = fs_translator(
+        request,
+        "Здравствуйте, {0}!\n\nПожалуйста, активируйте ваш аккаунт по ссылке ниже:\n{1}\n\nСпасибо за регистрацию!",
+        "Hi {0}!\n\nPlease activate your account using the link below:\n{1}\n\nThank you for registration!",
+        user.login, activation_link
+    )
+    # message = f"Hi {user.login},\n\nPlease activate your account using the link below:\n{activation_link}\n\nThank you!"
 
     # Отправка email
     send_mail(subject, message, 'from@example.com', [user.email])
