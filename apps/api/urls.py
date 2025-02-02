@@ -14,6 +14,7 @@ from .news_system.news_views import NewViewSet
 from .wallet_refills.wallet_refill_views import WalletRefillViewSet
 from .wallet_deductions.wallet_deduction_views import WalletDeductionViewSet
 from apps.mail.acc_activation.activation_view import activate_account
+from apps.mail.password_restore.user_password_restore_view import *
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 
@@ -57,32 +58,6 @@ urlpatterns = [
         'delete': 'destroy',        # DELETE:{{url}}/api/payments/<acc_id>/
         'patch': 'activate'         # PATCH: {{url}}/api/payments/<acc_id>/
     }), name='payment_account-detail'),
-
-    # Пополнения для конкретного аккаунта
-    path('payments/<int:account_id>/refills/', RefillViewSet.as_view({  # Не работает, переписать, выдаёт всё
-        'get': 'list',              # GET : {{url}}/api/payments/
-        'post': 'create'            # POST: {{url}}/api/payments/
-    }), name='refill-list'),
-    path('payments/<int:account_id>/refills/<int:pk>/', RefillViewSet.as_view({
-        'get': 'retrieve',          # GET :
-        'delete': 'destroy'         # DELETE:
-    }), name='refill-detail'),
-    path('payments/<int:account_id>/refills/<int:pk>/restore/', RefillViewSet.as_view({
-        'post': 'restore'           # POST: {{url}}/api/payments/<acc_id>/deductions/<deduction_id>/restore/
-    }), name='deduction-restore'),
-
-    # Списания для конкретного аккаунта
-    path('payments/<int:account_id>/deductions/', DeductionViewSet.as_view({
-        'get': 'list',              # GET : {{url}}/api/payments/<acc_id>/deductions/
-        'post': 'create'            # POST: {{url}}/api/payments/<acc_id>/deductions/
-    }), name='deduction-list'),
-    path('payments/<int:account_id>/deductions/<int:pk>/', DeductionViewSet.as_view({
-        'get': 'retrieve',          # GET : {{url}}/api/payments/<acc_id>/deductions/<deduction_id>
-        'delete': 'destroy'         #DELETE:{{url}}/api/payments/<acc_id>/deductions/<deduction_id>
-    }), name='deduction-detail'),
-    path('payments/<int:account_id>/deductions/<int:pk>/restore/', DeductionViewSet.as_view({
-        'post': 'restore'           # POST: {{url}}/api/payments/<acc_id>/deductions/<deduction_id>/restore/
-    }), name='deduction-restore'),
 
     # Покупка коинов за любую валюту для обычного пользователя
     path('wallet/purchase/', CoinPurchaseAPIView.as_view(), name='coins_purchase'),
@@ -132,8 +107,6 @@ urlpatterns = [
         'get': 'get',               # GET  : {{url}}/api/plans/get/
     }), name='get-active-plans'),
 
-
-
     # Создание, просмотр и изменение промокодов администратором
     path('promo/', PromoCodeViewSet.as_view({
         'get': 'list',              # GET : {{url}}/api/promo/
@@ -171,6 +144,30 @@ urlpatterns = [
         'patch': 'activate'         # PATCH: {{url}}/api/wallet/<wallet_id>/
     }), name='wallet-detail'),
 
+    # Аккаунт пользователя
+    path('im/', UserViewSet.as_view({
+        'get': 'me',                # GET : {{url}}/api/im/
+    }), name='user-detail'),
+    path('user/<int:pk>/', UserViewSet.as_view({
+        'get': 'retrieve',          # GET :  {{url}}/api/user/<user_id>/
+        'patch': 'update',          # PATCH: {{url}}/api/user/<user_id>/
+        'delete': 'destroy',        # DELETE:{{url}}/api/user/<user_id>/
+    }), name='user-detail'),
+
+    # Токены пользователя
+    path('tokens/', UserTokenViewSet.as_view({
+        'get': 'list',              # GET : {{url}}/api/tokens/
+        'post': 'create'            # POST: {{url}}/api/tokens/
+    }), name='user-token-list'),
+    path('tokens/<int:pk>/', UserTokenViewSet.as_view({
+        'get': 'retrieve',          # GET :   {{url}}/api/tokens/<token_id>
+        'delete': 'destroy'         # DELETE: {{url}}/api/tokens/<token_id>
+    }), name='user-token-detail'),
+
+    # Восстановление утерянного пароля
+    path('password-reset/', RequestPasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/confirm/', ConfirmPasswordResetView.as_view(), name='password_reset_confirm'),
+
     # Пополнения для конкретного кошелька (ТОЛЬКО ДЛЯ ТЕСТОВ! ПОТЕНЦИАЛЬНАЯ УЯЗВИМОСТЬ)
     # path('wallet/refills/', WalletRefillViewSet.as_view({
     #     'get': 'list'               # GET : {{url}}/api/wallet/
@@ -201,23 +198,29 @@ urlpatterns = [
     #     'post': 'restore'           # POST: {{url}}/api/wallet/<acc_id>/deductions/<deduction_id>/restore/
     # }), name='deduction-restore'),
 
-    # User accounts
-    path('im/', UserViewSet.as_view({
-        'get': 'me',                # GET : {{url}}/api/im/
-    }), name='user-detail'),
-    path('user/<int:pk>/', UserViewSet.as_view({
-        'get': 'retrieve',          # GET :  {{url}}/api/user/<user_id>/
-        'patch': 'update',          # PATCH: {{url}}/api/user/<user_id>/
-        'delete': 'destroy',        # DELETE:{{url}}/api/user/<user_id>/
-    }), name='user-detail'),
-
-    # User tokens
-    path('tokens/', UserTokenViewSet.as_view({
-        'get': 'list',              # GET : {{url}}/api/tokens/
-        'post': 'create'            # POST: {{url}}/api/tokens/
-    }), name='user-token-list'),
-    path('tokens/<int:pk>/', UserTokenViewSet.as_view({
-        'get': 'retrieve',          # GET :   {{url}}/api/tokens/<token_id>
-        'delete': 'destroy'         # DELETE: {{url}}/api/tokens/<token_id>
-    }), name='user-token-detail'),
+    # # Пополнения для конкретного аккаунта (ТОЛЬКО ДЛЯ ТЕСТОВ! ПОТЕНЦИАЛЬНАЯ УЯЗВИМОСТЬ)
+    # path('payments/<int:account_id>/refills/', RefillViewSet.as_view({  # Не работает, переписать, выдаёт всё
+    #     'get': 'list',              # GET : {{url}}/api/payments/
+    #     'post': 'create'            # POST: {{url}}/api/payments/
+    # }), name='refill-list'),
+    # path('payments/<int:account_id>/refills/<int:pk>/', RefillViewSet.as_view({
+    #     'get': 'retrieve',          # GET :
+    #     'delete': 'destroy'         # DELETE:
+    # }), name='refill-detail'),
+    # path('payments/<int:account_id>/refills/<int:pk>/restore/', RefillViewSet.as_view({
+    #     'post': 'restore'           # POST: {{url}}/api/payments/<acc_id>/deductions/<deduction_id>/restore/
+    # }), name='deduction-restore'),
+    #
+    # # Списания для конкретного аккаунта (ТОЛЬКО ДЛЯ ТЕСТОВ! ПОТЕНЦИАЛЬНАЯ УЯЗВИМОСТЬ)
+    # path('payments/<int:account_id>/deductions/', DeductionViewSet.as_view({
+    #     'get': 'list',              # GET : {{url}}/api/payments/<acc_id>/deductions/
+    #     'post': 'create'            # POST: {{url}}/api/payments/<acc_id>/deductions/
+    # }), name='deduction-list'),
+    # path('payments/<int:account_id>/deductions/<int:pk>/', DeductionViewSet.as_view({
+    #     'get': 'retrieve',          # GET : {{url}}/api/payments/<acc_id>/deductions/<deduction_id>
+    #     'delete': 'destroy'         #DELETE:{{url}}/api/payments/<acc_id>/deductions/<deduction_id>
+    # }), name='deduction-detail'),
+    # path('payments/<int:account_id>/deductions/<int:pk>/restore/', DeductionViewSet.as_view({
+    #     'post': 'restore'           # POST: {{url}}/api/payments/<acc_id>/deductions/<deduction_id>/restore/
+    # }), name='deduction-restore'),
 ]

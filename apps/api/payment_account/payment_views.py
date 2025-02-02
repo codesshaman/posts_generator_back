@@ -42,7 +42,7 @@ class PaymentAccountViewSet(
             raise ValidationError(translator(
                 "Платёжный аккаунт с этой валютой уже существует для данного пользователя.",
                 "A billing account with this currency already exists for this user.",
-                self.request
+
             ))
 
         # Создаём новый платёжный аккаунт
