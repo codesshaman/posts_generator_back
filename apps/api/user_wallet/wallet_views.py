@@ -5,6 +5,7 @@ from ..permissions import ZUserTokenPermission
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins
 from rest_framework.views import APIView
+from project.language import translator
 from rest_framework import status
 from .wallet_models import Wallet
 
@@ -36,7 +37,11 @@ class WalletViewSet(
 
         # Проверяем, существует ли уже кошелёк пользователя
         if Wallet.objects.filter(user=user).exists():
-            raise ValidationError(f"Кошелёк для данного пользователя уже существует.")
+            raise ValidationError(translator(
+                "Кошелёк для данного пользователя уже существует.",
+                "The wallet for this user already exists.",
+                self.request
+            ))
 
         # Создаём новый кошелёк
         serializer.save(user=user, is_active=True, balance=0.000000)
@@ -65,19 +70,6 @@ class WalletDetailViewSet(
         # Обычный пользователь видит только свои кошельки
         return Wallet.objects.filter(user=user)
 
-    # def perform_create(self, serializer):
-    #     """
-    #     Создаёт новый кошелёк для пользователя.
-    #     """
-    #     user = self.request.user
-    #
-    #     # Проверяем, существует ли уже кошелёк пользователя
-    #     if Wallet.objects.filter(user=user).exists():
-    #         raise ValidationError(f"Кошелёк для данного пользователя уже существует.")
-    #
-    #     # Создаём новый платёжный аккаунт
-    #     serializer.save(user=user, is_active=True, balance=0.000000)
-
     def destroy(self, request, *args, **kwargs):
         """
         Мягкое удаление кошелька: устанавливает is_active=False.
@@ -87,7 +79,11 @@ class WalletDetailViewSet(
         # Проверяем, имеет ли пользователь права на удаление
         if not request.user.is_staff and instance.user != request.user:
             return Response(
-                {"detail": "У вас нет прав на удаление этого кошелька."},
+                {"detail": translator(
+                    "У вас нет прав на удаление этого кошелька.",
+                    "You don't have rights to delete this wallet.",
+                    self.request
+                )},
                 status=403
             )
 
@@ -96,7 +92,11 @@ class WalletDetailViewSet(
         instance.is_active = False
         instance.save(update_fields=["is_active", "status"])
 
-        return Response({"detail": "Кошелёк успешно деактивирован."}, status=204)
+        return Response({"detail": translator(
+            "Кошелёк успешно деактивирован.",
+            "The wallet has been successfully deactivated.",
+            self.request
+        )}, status=204)
 
     def activate(self, request, *args, **kwargs):
         """
@@ -107,14 +107,22 @@ class WalletDetailViewSet(
         # Проверяем, является ли кошелек неактивным
         if instance.is_active:
             return Response(
-                {"detail": "Этот кошелёк уже активен."},
+                {"detail": translator(
+                    "Этот кошелёк уже активен.",
+                    "This wallet is already active.",
+                    self.request
+                )},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         # Проверяем, имеет ли пользователь права на восстановление
         if not request.user.is_staff and instance.user != request.user:
             return Response(
-                {"detail": "У вас нет прав на восстановление этого кошелька."},
+                {"detail": translator(
+                    "У вас нет прав на восстановление этого кошелька.",
+                    "You do not have the rights to restore this wallet.",
+                    self.request
+                )},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -123,7 +131,11 @@ class WalletDetailViewSet(
         instance.is_active = True
         instance.save(update_fields=["is_active", "status"])
 
-        return Response({"detail": "Кошелёк успешно восстановлен."}, status=status.HTTP_200_OK)
+        return Response({"detail": translator(
+            "Кошелёк успешно восстановлен.",
+            "The wallet has been successfully restored.",
+            self.request
+        )}, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         """
@@ -134,7 +146,11 @@ class WalletDetailViewSet(
         # Проверяем, имеет ли пользователь права на редактирование
         if not request.user.is_staff and instance.user != request.user:
             return Response(
-                {"detail": "У вас нет прав на редактирование этого кошелька."},
+                {"detail": translator(
+                    "У вас нет прав на редактирование этого кошелька.",
+                    "You do not have the rights to edit this wallet.",
+                    self.request
+                )},
                 status=403
             )
 
@@ -156,7 +172,11 @@ class PositiveBalanceWalletsView(APIView):
         Доступно только для пользователей is_staff.
         """
         if not request.user.is_staff:
-            raise PermissionDenied("Доступ разрешён только администраторам.")
+            raise PermissionDenied(translator(
+                "Доступ разрешён только администраторам.",
+                "Access is allowed only to administrators.",
+                self.request
+            ))
 
         # Фильтруем кошельки с положительным балансом
         accounts = Wallet.objects.filter(balance__gt=0)

@@ -4,6 +4,7 @@ from .tariff_serializers import PlanSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import viewsets, status
+from project.language import translator
 from .tariff_models import Plan
 import datetime
 
@@ -34,7 +35,11 @@ class AdminPlanViewSet(viewsets.ModelViewSet):
         plan.is_archived = True
         plan.archived_in = now()
         plan.save()
-        return Response({"detail": "Plan archived successfully."}, status=status.HTTP_200_OK)
+        return Response({"detail": translator(
+            "Тариф успешно архивирован.",
+            "Plan archived successfully.",
+            self.request
+        )}, status=status.HTTP_200_OK)
 
 
 class UserPlanViewSet(viewsets.ModelViewSet):
@@ -72,9 +77,13 @@ class PlanViewSet(viewsets.ModelViewSet):
         try:
             instance.is_active = False
             instance.save()
-            return Response({"detail": "Plan remove successfully."}, status=status.HTTP_200_OK)
+            return Response({"detail": translator(
+                "Тариф успешно удалён",
+                "Plan remove successfully.",
+                self.request
+            )}, status=status.HTTP_200_OK)
         except Plan.DoesNotExist:
-            return Response({"detail": "Plan not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": translator("Plan not found.")}, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
     def restore(self, request, pk=None):
@@ -86,9 +95,17 @@ class PlanViewSet(viewsets.ModelViewSet):
             plan = Plan.objects.get(pk=pk, is_active=False)  # Ищем удалённый тариф
             plan.is_active = True
             plan.save()
-            return Response({"detail": "Plan restored successfully."}, status=status.HTTP_200_OK)
+            return Response({"detail": translator(
+                "Тариф успещно восстановлен.",
+                "Plan restored successfully.",
+                self.request
+            )}, status=status.HTTP_200_OK)
         except Plan.DoesNotExist:
-            return Response({"detail": "Plan not found or already active."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": translator(
+                "Тариф не найден или уже активен.",
+                "Plan not found or already active.",
+                self.request
+            )}, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
     def archive(self, request, pk=None):
@@ -99,7 +116,11 @@ class PlanViewSet(viewsets.ModelViewSet):
         plan.is_archived = True
         plan.archived_in = now()
         plan.save()
-        return Response({"detail": "Plan archived successfully."}, status=status.HTTP_200_OK)
+        return Response({"detail": translator(
+            "Тариф успешно архивирован.",
+            "Plan archived successfully.",
+            self.request
+        )}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
     def archive(self, request, pk=None):
@@ -108,13 +129,21 @@ class PlanViewSet(viewsets.ModelViewSet):
         """
         plan = self.get_object()
         if plan.is_archived:
-            return Response({"detail": "Plan is already archived."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": translator(
+                "Тариф уже был архивирован.",
+                "Plan is already archived.",
+                self.request
+            )}, status=status.HTTP_400_BAD_REQUEST)
 
         plan.is_archived = True
         plan.archived_in = now()
         plan.save()
 
-        return Response({"detail": "Plan archived successfully."}, status=status.HTTP_200_OK)
+        return Response({"detail": translator(
+            "Тариф успешно архивирован.",
+            "Plan archived successfully.",
+            self.request
+        )}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
     def unarchive(self, request, pk=None):
@@ -123,10 +152,18 @@ class PlanViewSet(viewsets.ModelViewSet):
         """
         plan = self.get_object()
         if not plan.is_archived:
-            return Response({"detail": "Plan is not archived."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": translator(
+                "Данный тариф не был архивирован.",
+                "Plan is not archived.",
+                self.request
+            )}, status=status.HTTP_400_BAD_REQUEST)
 
         plan.is_archived = False
         plan.archived_in = None  # Сбрасываем дату архивации
         plan.save()
 
-        return Response({"detail": "Plan unarchived successfully."}, status=status.HTTP_200_OK)
+        return Response({"detail": translator(
+            "Тариф успешно разархивирован.",
+            "Plan unarchived successfully.",
+            self.request
+        )}, status=status.HTTP_200_OK)

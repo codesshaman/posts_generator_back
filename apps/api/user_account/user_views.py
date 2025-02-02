@@ -6,6 +6,7 @@ from ..permissions import ZUserTokenPermission
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from project.language import translator
 from project.models import User
 
 
@@ -20,7 +21,11 @@ class UserRegistrationAPIView(views.APIView):
         if serializer.is_valid():
             serializer.save()  # Вызов метода create в сериализаторе
             return Response(
-                {"message": "User registered successfully. Please check your email for the activation link."},
+                {"message": translator(
+                    "Пользователь успешно зарегистрирован. Пожалуйста, перейдите по ссылке активации, отправленной на указанный email.",
+                    "User registered successfully. Please check your email for the activation link.",
+                    self.request
+                )},
                 status=status.HTTP_201_CREATED,
             )
         # Возвращаем ошибки валидации
@@ -43,7 +48,11 @@ class UserViewSet(viewsets.ViewSet):
 
         # Если обычный пользователь, ограничить доступ только к своим данным
         if pk is None or user.id != int(pk):
-            raise PermissionDenied("Доступ запрещён. Вы можете работать только со своими данными.")
+            raise PermissionDenied(translator(
+                "Доступ запрещён. Вы можете работать только со своими данными.",
+                "Access is denied. You can only work with your own data.",
+                self.request
+            ))
 
         return get_object_or_404(User, id=pk)
 
@@ -73,7 +82,11 @@ class UserViewSet(viewsets.ViewSet):
         # Проверка на попытку изменить is_staff
         if 'is_staff' in request.data and not request.user.is_staff:
             return Response(
-                {"detail": "Обратитесь к администратору за дополнительными правами."},
+                {"detail": translator(
+                    "Обратитесь к администратору за дополнительными правами.",
+                    "Contact the administrator for additional rights.",
+                    self.request
+                )},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -94,7 +107,11 @@ class UserViewSet(viewsets.ViewSet):
         # Если пользователь уже не активен
         if not user.is_active:
             return Response(
-                {"detail": "Пользователь уже деактивирован."},
+                {"detail": translator(
+                    "Пользователь уже деактивирован.",
+                    "The user has already been deactivated.",
+                    self.request
+                )},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -103,6 +120,10 @@ class UserViewSet(viewsets.ViewSet):
         user.save()
 
         return Response(
-            {"detail": f"Пользователь с ID {user.id} был деактивирован."},
+            {"detail": translator(
+                "Пользователь был деактивирован.",
+                "The user has been deactivated.",
+                self.request
+            )},
             status=status.HTTP_200_OK,
         )

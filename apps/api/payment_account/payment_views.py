@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import viewsets, mixins
 from .payment_models import PaymentAccount
 from rest_framework.views import APIView
+from project.language import translator
 
 
 
@@ -38,7 +39,11 @@ class PaymentAccountViewSet(
 
         # Проверяем, существует ли уже платёжный аккаунт с данной валютой для пользователя
         if PaymentAccount.objects.filter(user=user, currency=currency).exists():
-            raise ValidationError(f"Платёжный аккаунт с валютой {currency} уже существует для данного пользователя.")
+            raise ValidationError(translator(
+                "Платёжный аккаунт с этой валютой уже существует для данного пользователя.",
+                "A billing account with this currency already exists for this user.",
+                self.request
+            ))
 
         # Создаём новый платёжный аккаунт
         serializer.save(user=user)
@@ -76,7 +81,11 @@ class PaymentAccountsViewSet(
 
         # Проверяем, существует ли уже платёжный аккаунт с данной валютой для пользователя
         if PaymentAccount.objects.filter(user=user, currency=currency).exists():
-            raise ValidationError(f"Платёжный аккаунт с валютой {currency} уже существует для данного пользователя.")
+            raise ValidationError(translator(
+                "Платёжный аккаунт с этой валютой уже существует для данного пользователя.",
+                "A billing account with this currency already exists for this user.",
+                self.request
+            ))
 
         # Создаём новый платёжный аккаунт
         serializer.save(user=user, is_active=True)
@@ -90,7 +99,11 @@ class PaymentAccountsViewSet(
         # Проверяем, имеет ли пользователь права на удаление
         if not request.user.is_staff and instance.user != request.user:
             return Response(
-                {"detail": "У вас нет прав на удаление этого платёжного аккаунта."},
+                {"detail": translator(
+                    "У вас нет прав на удаление этого платёжного аккаунта.",
+                    "You do not have the rights to delete this billing account.",
+                    self.request
+                )},
                 status=403
             )
 
@@ -98,7 +111,11 @@ class PaymentAccountsViewSet(
         instance.is_active = False
         instance.save()
 
-        return Response({"detail": "Платёжный аккаунт успешно деактивирован."}, status=204)
+        return Response({"detail": translator(
+            "Платёжный аккаунт успешно деактивирован.",
+            "Billing account has been successfully deactivated.",
+            self.request
+        )}, status=204)
 
     def activate(self, request, *args, **kwargs):
         """
@@ -109,7 +126,11 @@ class PaymentAccountsViewSet(
         # Проверяем, имеет ли пользователь права на восстановление
         if not request.user.is_staff and instance.user != request.user:
             return Response(
-                {"detail": "У вас нет прав на восстановление этого платёжного аккаунта."},
+                {"detail": translator(
+                    "У вас нет прав на восстановление этого платёжного аккаунта.",
+                    "You do not have the rights to restore this billing account.",
+                    self.request
+                )},
                 status=403
             )
 
@@ -117,7 +138,11 @@ class PaymentAccountsViewSet(
         instance.is_active = True
         instance.save()
 
-        return Response({"detail": "Платёжный аккаунт успешно восстановлен."}, status=204)
+        return Response({"detail": translator(
+            "Платёжный аккаунт успешно восстановлен.",
+            "Billing account has been successfully restored.",
+            self.request
+        )}, status=204)
 
     def update(self, request, *args, **kwargs):
         """
@@ -128,7 +153,11 @@ class PaymentAccountsViewSet(
         # Проверяем, имеет ли пользователь права на редактирование
         if not request.user.is_staff and instance.user != request.user:
             return Response(
-                {"detail": "У вас нет прав на редактирование этого платёжного аккаунта."},
+                {"detail": translator(
+                    "У вас нет прав на редактирование этого платёжного аккаунта.",
+                    "You do not have the rights to edit this billing account.",
+                    self.request
+                )},
                 status=403
             )
 
@@ -150,7 +179,11 @@ class PositiveBalanceAccountsView(APIView):
         Доступно только для пользователей is_staff.
         """
         if not request.user.is_staff:
-            raise PermissionDenied("Доступ разрешён только администраторам.")
+            raise PermissionDenied(translator(
+                "Доступ разрешён только администраторам.",
+                "Access is allowed only to administrators.",
+                self.request
+            ))
 
         # Фильтруем аккаунты с положительным балансом
         accounts = PaymentAccount.objects.filter(balance__gt=0)

@@ -3,6 +3,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from project.language import translator
 from .currency_models import Currency
 
 
@@ -50,18 +51,30 @@ class AccountCurrencyAPIView(APIView):
         try:
             payment_account = PaymentAccount.objects.get(pk=account_id)
         except PaymentAccount.DoesNotExist:
-            raise NotFound(detail="Платёжный аккаунт не найден.")
+            raise NotFound(detail=translator(
+                "Платёжный аккаунт не найден.",
+                "The billing account was not found.",
+                self.request
+            ))
 
         # Проверяем, принадлежит ли аккаунт текущему пользователю
         if payment_account.user != request.user:
-            raise PermissionDenied(detail="Вы не можете просматривать этот платёжный аккаунт.")
+            raise PermissionDenied(detail=translator(
+                "Вы не можете просматривать этот платёжный аккаунт.",
+                "You cannot view this billing account.",
+                self.request
+            ))
 
         # Получаем валюту аккаунта
         currency_code = payment_account.currency
         try:
             currency = Currency.objects.get(code=currency_code)
         except Currency.DoesNotExist:
-            raise NotFound(detail=f"Валюта с кодом {currency_code} не найдена.")
+            raise NotFound(detail=translator(
+                "Валюта не найдена.",
+                "Currency not found.",
+                self.request
+            ))
 
         # Формируем результат
         data = {
@@ -85,13 +98,21 @@ class CurrencyRateAPIView(APIView):
         currency_code = request.data.get('currency')
 
         if not currency_code:
-            return Response({"detail": "Поле 'currency' обязательно."}, status=400)
+            return Response({"detail": translator(
+                "Поле 'currency' обязательно.",
+                "The 'currency' field is required.",
+                self.request
+            )}, status=400)
 
         # Проверяем существование валюты
         try:
             currency = Currency.objects.get(code=currency_code.upper())  # Приводим код к верхнему регистру
         except Currency.DoesNotExist:
-            raise NotFound(detail=f"Валюта с кодом {currency_code} не найдена.")
+            raise NotFound(detail=translator(
+                "Валюта не найдена.",
+                "Currency not found.",
+                self.request
+            ))
 
         # Формируем ответ
         data = {

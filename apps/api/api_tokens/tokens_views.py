@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from ..permissions import ZUserTokenPermission
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
+from project.language import translator
 from django.db import IntegrityError
 from .tokens_models import UserToken
 
@@ -44,13 +45,21 @@ class UserTokenViewSet(ViewSet):
         user = request.user
         name = request.data.get('name', '').strip()  # Получаем имя токена из запроса
         if not name:
-            return Response({"error": "Поле 'name' обязательно для создания токена."}, status=400)
+            return Response({"error": translator(
+                "Поле 'name' обязательно для создания токена.",
+                "The 'name' field is required to create a token.",
+                self.request
+            )}, status=400)
 
         expires_in_days = request.data.get('expires_in_days', 30)  # По умолчанию 30 дней
         try:
             expires_in_days = int(expires_in_days)
         except ValueError:
-            return Response({"error": "Поле 'expires_in_days' должно быть числом."}, status=400)
+            return Response({"error": translator(
+                "Поле 'expires_in_days' должно быть числом.",
+                "The 'expires_in_days' field must be a number.",
+                self.request
+            )}, status=400)
 
         expires_at = now() + timedelta(days=expires_in_days)
 
@@ -67,7 +76,11 @@ class UserTokenViewSet(ViewSet):
                 expires_at=expires_at
             )
         except IntegrityError:
-            return Response({"error": "Токен с таким именем уже существует."}, status=400)
+            return Response({"error": translator(
+                "Токен с таким именем уже существует.",
+                "A token with that name already exists.",
+                self.request
+            )}, status=400)
 
         serializer = UserTokenSerializer(token)
         return Response(serializer.data, status=201)
@@ -90,6 +103,14 @@ class UserTokenViewSet(ViewSet):
         queryset = self.get_queryset()
         token = get_object_or_404(queryset, pk=pk)
         if not request.user.is_staff and token.user != request.user:
-            raise PermissionDenied("Вы не можете удалить токен, который вам не принадлежит.")
+            raise PermissionDenied(translator(
+                "Вы не можете удалить токен, который вам не принадлежит.",
+                "You cannot delete a token that does not belong to you.",
+                self.request
+            ))
         token.delete()
-        return Response({"detail": "Токен успешно удален."}, status=204)
+        return Response({"detail": translator(
+            "Токен успешно удален.",
+            "The token has been successfully deleted.",
+            self.request
+        )}, status=204)
