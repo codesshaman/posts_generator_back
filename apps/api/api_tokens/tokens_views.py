@@ -2,7 +2,7 @@ from rest_framework.exceptions import PermissionDenied
 from .tokens_serializers import UserTokenSerializer
 from django.utils.timezone import now, timedelta
 from django.shortcuts import get_object_or_404
-from ..permissions import ZUserTokenPermission
+from project.permissions import ZUserTokenPermission
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from project.language import translator

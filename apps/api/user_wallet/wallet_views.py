@@ -1,7 +1,7 @@
 from .wallet_serializers import WalletSerializer, PositiveBalanceWalletsSerializer
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.exceptions import ValidationError
-from ..permissions import ZUserTokenPermission
+from project.permissions import ZUserTokenPermission
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins
 from rest_framework.views import APIView

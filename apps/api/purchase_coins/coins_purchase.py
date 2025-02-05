@@ -1,6 +1,6 @@
 from decimal import Decimal, ROUND_DOWN
 from django.db import transaction
-from ..permissions import ZUserTokenPermission
+from project.permissions import ZUserTokenPermission
 from project.language import translator
 from rest_framework.views import APIView
 from rest_framework.response import Response

@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from apps.api.permissions import ZUserTokenPermission
+from project.permissions import ZUserTokenPermission
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status

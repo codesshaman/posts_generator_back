@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'apps.api.apps.ApiConfig',
     'apps.mail.apps.MailConfig',
+    'apps.vkapi.apps.VkapiConfig',
 ]
 
 REST_FRAMEWORK = {

@@ -1,5 +1,5 @@
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from ..permissions import ZUserTokenPermission
+from project.permissions import ZUserTokenPermission
 from .tariff_serializers import PlanSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action

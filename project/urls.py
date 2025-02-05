@@ -17,8 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('apps.api.urls')),  # Подключение маршрутов API
-    path('mail/', include('apps.mail.urls')),  # Подключение маршрутов API
+    path('api/', include('apps.api.urls')),
+    path('mail/', include('apps.mail.urls')),
+    path('vk/', include('apps.vkapi.urls')),
 ]

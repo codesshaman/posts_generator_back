@@ -1,14 +1,13 @@
 from .payment_serializers import PaymentAccountSerializer, PositiveBalanceAccountsSerializer
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.exceptions import ValidationError
+from project.permissions import ZUserTokenPermission
 from rest_framework.permissions import  IsAdminUser
-from ..permissions import ZUserTokenPermission
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins
 from .payment_models import PaymentAccount
 from rest_framework.views import APIView
 from project.language import translator
-
 
 
 class PaymentAccountViewSet(
@@ -42,7 +41,7 @@ class PaymentAccountViewSet(
             raise ValidationError(translator(
                 "Платёжный аккаунт с этой валютой уже существует для данного пользователя.",
                 "A billing account with this currency already exists for this user.",
-
+                self.request
             ))
 
         # Создаём новый платёжный аккаунт

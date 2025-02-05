@@ -14,7 +14,6 @@ from .news_system.news_views import NewViewSet
 from .wallet_refills.wallet_refill_views import WalletRefillViewSet
 from .wallet_deductions.wallet_deduction_views import WalletDeductionViewSet
 from apps.mail.acc_activation.activation_view import activate_account
-from apps.mail.password_restore.user_password_restore_view import *
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 
@@ -163,10 +162,6 @@ urlpatterns = [
         'get': 'retrieve',          # GET :   {{url}}/api/tokens/<token_id>
         'delete': 'destroy'         # DELETE: {{url}}/api/tokens/<token_id>
     }), name='user-token-detail'),
-
-    # Восстановление утерянного пароля
-    path('password-reset/', RequestPasswordResetView.as_view(), name='password_reset'),
-    path('password-reset/confirm/', ConfirmPasswordResetView.as_view(), name='password_reset_confirm'),
 
     # Пополнения для конкретного кошелька (ТОЛЬКО ДЛЯ ТЕСТОВ! ПОТЕНЦИАЛЬНАЯ УЯЗВИМОСТЬ)
     # path('wallet/refills/', WalletRefillViewSet.as_view({

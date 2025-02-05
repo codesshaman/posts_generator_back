@@ -2,7 +2,7 @@ from .user_serializers import UserSerializer, UserRegistrationSerializer
 from rest_framework import generics, permissions, status, viewsets, views
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny
-from ..permissions import ZUserTokenPermission
+from project.permissions import ZUserTokenPermission
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.response import Response
