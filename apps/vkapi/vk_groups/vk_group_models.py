@@ -19,13 +19,3 @@ class VkGroup(models.Model):
 
     def __str__(self):
         return f'VK Group {self.vk_id} ({"Active" if self.is_active else "Inactive"})'
-
-class VkGroupToken(models.Model):
-    group = models.ForeignKey('VkGroup', on_delete=models.CASCADE, related_name='group_tokens')
-    token = models.CharField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f'Token for group {self.group.vk_id}'

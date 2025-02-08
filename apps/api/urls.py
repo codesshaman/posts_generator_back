@@ -20,7 +20,6 @@ from django.urls import path, include
 
 # Роутер для автоматического создания маршрутов
 router = DefaultRouter()
-router.register(r'promo', PromoCodeViewSet, basename='promocode')
 
 urlpatterns = [
     path('', include(router.urls)),  # Подключение всех маршрутов из роутера

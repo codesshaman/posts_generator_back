@@ -1,10 +1,15 @@
-from .vk_groups.vk_groups_views import VkGroupViewSet, VkGroupsViewSet
-from .vk_groups.vk_group_token_views import VkGroupTokenViewSet
+from .vk_groups.vk_groups_views import VkGroupsViewSet
+from .vk_tokens.tokens_views import VKTokensViewSet
+from rest_framework.routers import DefaultRouter
 from django.urls import path
 
 
+# Роутер для автоматического создания маршрутов
+router = DefaultRouter()
+
 urlpatterns = [
-    path('vkgroups/', VkGroupViewSet.as_view({
+    # Работа с группами ВК
+    path('vkgroups/', VkGroupsViewSet.as_view({
         'get': 'list',              # GET : {{url}}/vk/vkgroups/
         'post': 'create'            # POST: {{url}}/vk/vkgroups/
     }), name='vkgroup-list-create'),
@@ -14,14 +19,13 @@ urlpatterns = [
         'patch': 'partial_update',  # PATCH :{{url}}/vk/vkgroups/<group_id>/
         'delete': 'destroy'         # DELETE:{{url}}/vk/vkgroups/<group_id>/
     }), name='vkgroup-detail'),
-    path('vkgrouptokens/', VkGroupTokenViewSet.as_view({
-        'get': 'list',              # GET : {{url}}/vk/vkgrouptokens/
-        'post': 'create'            # POST: {{url}}/vk/vkgrouptokens/
-    }), name='vkgroup-token-list-create'),
-    path('vkgrouptokens/<token_id>/', VkGroupsViewSet.as_view({
-        'get': 'retrieve',          # GET :  {{url}}/vk/vkgrouptokens/<token_id>/
-        'put': 'update',            # PUT :  {{url}}/vk/vkgrouptokens/<token_id>/
-        'patch': 'partial_update',  # PATCH :{{url}}/vk/vkgrouptokens/<token_id>/
-        'delete': 'destroy'         # DELETE:{{url}}/vk/vkgrouptokens/<token_id>/
-    }), name='vkgroup-token-detail'),
+    # Работа с токенами Вк
+    path('vktokens/', VKTokensViewSet.as_view({
+        'get': 'list',              # GET : {{url}}/api/vktokens/
+        'post': 'create'            # POST: {{url}}/api/vktokens/
+    }), name='vk-tokens-list'),
+    path('vktokens/<int:pk>/', VKTokensViewSet.as_view({
+        'get': 'retrieve',          # GET :   {{url}}/api/vktokens/<token_id>/
+        'delete': 'destroy'         # DELETE: {{url}}/api/vktokens/<token_id>/
+    }), name='vk-token-detail'),
 ]
