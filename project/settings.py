@@ -39,13 +39,14 @@ SECRET_KEY = 'django-insecure-n3_nt)epxh#sk7zl^g=68v&)l8(^%p5smpkxyukhw0i&u%*uaw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1']
 
 
 # Application definition
 
 INSTALLED_APPS = [
     'project',
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
@@ -73,8 +74,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
         'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
 }
@@ -89,12 +90,15 @@ SIMPLE_JWT = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -137,6 +141,14 @@ DATABASES = {
         'PORT': DATABASE_PORT
     }
 }
+
+# Читаем параметры приложения ВК для авторизации
+VK_CLIENT_ID = os.getenv('VK_CLIENT_ID', '123456')
+VK_CLIENT_SECRET = os.getenv('VK_CLIENT_SECRET', 'djangosecret123456')
+VK_REDIRECT_URI = os.getenv('http://0.0.0.0:1024/vkauth/callback/')
+VK_AUTH_URL = os.getenv('VK_AUTH_URL', 'https://oauth.vk.com/authorize')
+VK_TOKEN_URL = os.getenv('VK_TOKEN_URL', 'https://oauth.vk.com/access_token')
+VK_API_VERSION = os.getenv('VK_API_VERSION', '5.199')
 
 # Читаем USE_MAIL из .env
 USE_MAIL = os.getenv('USE_MAIL', 'False').lower() in ['true', '1', 'yes']
@@ -212,3 +224,20 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'project.User'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:1024",  # Если фронтенд работает на этом порту
+    "http://localhost:1024",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    'GET', 'POST'
+]
+
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'authorization',
+    'Z-User-Token',
+]

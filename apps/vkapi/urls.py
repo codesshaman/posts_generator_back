@@ -1,6 +1,8 @@
 from .vk_groups.vk_groups_views import VkGroupsViewSet
 from .vk_tokens.tokens_views import VKTokensViewSet
 from rest_framework.routers import DefaultRouter
+from .vk_auth.vkauth_views import vk_login_url, vk_callback
+from .vk_register.vk_register import register_user
 from django.urls import path
 
 
@@ -28,4 +30,8 @@ urlpatterns = [
         'get': 'retrieve',          # GET :   {{url}}/api/vktokens/<token_id>/
         'delete': 'destroy'         # DELETE: {{url}}/api/vktokens/<token_id>/
     }), name='vk-token-detail'),
+    # Получение токенов Вк
+    # path('login-url/', vk_login_url, name='vk_login_url'),
+    path('login-url/', register_user, name='register_user'),
+    path('callback/', vk_callback, name='vk_callback'),
 ]
