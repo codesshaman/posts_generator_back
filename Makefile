@@ -7,6 +7,11 @@ VENV_BIN=$(VENV)/bin
 PYTHON=$(VENV_BIN)/python3
 PIP=$(VENV_BIN)/pip3
 
+ifneq (,$(wildcard .env))
+    include .env
+    export
+endif
+
 NO_COLOR=\033[0m		# Color Reset
 COLOR_OFF=\e[0m			# Color Off
 OK_COLOR=\033[32;01m	# Green Ok
@@ -15,7 +20,7 @@ WARN_COLOR=\033[33;01m	# Warning yellow
 
 all:
 	@printf "$(OK_COLOR)==== Starting the configuration ${name} ====$(NO_COLOR)\n"
-	$(PYTHON) manage.py runserver 0.0.0.0:8000
+	$(PYTHON) manage.py runserver $(ALLOWED_HOST_1):8000
 
 app:
 	@printf "$(OK_COLOR)==== Creating a new application ====$(NO_COLOR)\n"

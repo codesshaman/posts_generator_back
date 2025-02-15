@@ -39,7 +39,11 @@ SECRET_KEY = 'django-insecure-n3_nt)epxh#sk7zl^g=68v&)l8(^%p5smpkxyukhw0i&u%*uaw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', '192.168.1.136', 'devback.groupposter.ru']
+ALLOWED_HOST_1 = os.getenv('ALLOWED_HOST_1')
+ALLOWED_HOST_2 = os.getenv('ALLOWED_HOST_2')
+ALLOWED_HOST_DEV = os.getenv('ALLOWED_HOST_DEV')
+
+ALLOWED_HOSTS = [ALLOWED_HOST_1, ALLOWED_HOST_2, ALLOWED_HOST_DEV]
 
 # Application definition
 
@@ -224,11 +228,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'project.User'
 
+CORS_ALLOWED_SERVER=os.getenv('CORS_ALLOWED_SERVER')
+
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:1024",  # Если фронтенд работает на этом порту
-    "http://localhost:1024",
-    "http://192.168.1.135:1024",
-    "devfront.groupposter.ru"
+    "http://" + ALLOWED_HOST_1 + ":1024",
+    "http://" + ALLOWED_HOST_2 + ":1024",
+    CORS_ALLOWED_SERVER
 ]
 
 CORS_ALLOW_CREDENTIALS = True
