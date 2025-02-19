@@ -22,5 +22,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('apps.api.urls')),
     path('mail/', include('apps.mail.urls')),
-    path('api/', include('apps.vkapi.urls')),
 ]

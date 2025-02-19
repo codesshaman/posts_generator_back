@@ -19,18 +19,43 @@ class UserRegistrationAPIView(views.APIView):
         # Передаем context с request в сериализатор
         serializer = UserRegistrationSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()  # Вызов метода create в сериализаторе
-            return Response(
-                {"message": translator(
+            user = serializer.save()  # Вызов метода create в сериализаторе
+
+            if user.auth == 'email':
+                message = translator(
                     "Пользователь успешно зарегистрирован. Пожалуйста, перейдите по ссылке активации, отправленной на указанный email.",
                     "User registered successfully. Please check your email for the activation link.",
                     self.request
-                )},
-                status=status.HTTP_201_CREATED,
-            )
+                )
+            elif user.auth == 'vk':
+                message = translator(
+                    "Пользователь успешно зарегистрирован через ВКонтакте. Вы можете войти в систему.",
+                    "User successfully registered via VK. You can now log in.",
+                    self.request
+                )
+            else:
+                message = translator(
+                    "Пользователь успешно зарегистрирован.",
+                    "User registered successfully.",
+                    self.request
+                )
+
+            return Response({"message": message}, status=status.HTTP_201_CREATED)
+
         # Возвращаем ошибки валидации
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+# class GoogleAuthAPIView(views.APIView):
+#     def post(self, request):
+#         google_data = get_google_user_data(request.data['google_token'])  # Функция получения данных из Google
+#         request.user_data = google_data  # Передача данных в сериализатор
+#
+#         serializer = UserRegistrationSerializer(data=request.data, context={'request': request})
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({"message": "Google аутентификация прошла успешно"}, status=201)
+#         return Response(serializer.errors, status=400)
 
 
 class UserViewSet(viewsets.ViewSet):

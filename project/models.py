@@ -5,11 +5,17 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, login, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError(_('The Email field must be set'))
-        email = self.normalize_email(email)
-        user = self.model(login=login, email=email, **extra_fields)
+    def create_user(self, login, email, auth, password=None, **extra_fields):
+        if not auth:
+            raise ValueError(_('The auth field must be set'))
+        if not login:
+            raise ValueError(_('The login field must be set'))
+        if email:
+            email = self.normalize_email(email)
+            # Проверка уникальности email только если email не пустой
+            if User.objects.filter(email=email).exists():
+                raise ValueError(_('This email is already taken.'))
+        user = self.model(login=login, email=email, auth=auth, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -18,25 +24,47 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         if extra_fields.get('is_staff') is not True:
-            raise ValueError(_('Superuser must have is_staff=True.'))
+            raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
-            raise ValueError(_('Superuser must have is_superuser=True.'))
-        return self.create_user(login, email, password, **extra_fields)
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        # Передаем все аргументы как именованные
+        return self.create_user(
+            login=login,
+            email=email,
+            auth="email",
+            password=password,
+            **extra_fields
+        )
 
 class User(AbstractBaseUser, PermissionsMixin):
+    AUTH_CHOICES = [
+        ('email', 'Email'),
+        ('vk', 'VK'),
+        ('google', 'Google'),
+    ]
+
+    email = models.EmailField(unique=True, blank=True, null=True)
     login = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(unique=True)
+    auth = models.CharField(max_length=10, choices=AUTH_CHOICES, default='email')
+    vk = models.BigIntegerField(unique=True, blank=True, null=True)
     name = models.CharField(max_length=150, blank=True)
     surname = models.CharField(max_length=150, blank=True)
-    referrer = models.IntegerField(default=0, blank=True, null=True)
+    referrer = models.IntegerField(default=1, blank=True, null=True)
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=now, verbose_name=_("date joined"))
 
+    USERNAME_FIELD = "login"
+    REQUIRED_FIELDS = ['email']
+
+    def __str__(self):
+        return self.login
+
     # Уникальные related_name для групп и разрешений
     groups = models.ManyToManyField(
         Group,
-        related_name="custom_user_groups",  # Уникальное имя
+        related_name="custom_user_groups",
         blank=True,
         help_text=_(
             "The groups this user belongs to. A user will get all permissions "
@@ -46,7 +74,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     user_permissions = models.ManyToManyField(
         Permission,
-        related_name="custom_user_permissions",  # Уникальное имя
+        related_name="custom_user_permissions",
         blank=True,
         help_text=_("Specific permissions for this user."),
         verbose_name=_("user permissions"),
@@ -55,6 +83,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     def save(self, *args, **kwargs):
         if self.is_superuser:
             self.is_active = True  # Устанавливаем is_active в True для суперпользователей
+        if self.auth != "email":
+            self.is_active = True
         super().save(*args, **kwargs)
 
     objects = UserManager()

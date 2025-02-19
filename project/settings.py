@@ -33,9 +33,6 @@ sys.path.insert(0, os.path.join(PROJECT_ROOT, 'apps'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-n3_nt)epxh#sk7zl^g=68v&)l8(^%p5smpkxyukhw0i&u%*uaw'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
@@ -44,6 +41,8 @@ ALLOWED_HOST_2 = os.getenv('ALLOWED_HOST_2')
 ALLOWED_HOST_DEV = os.getenv('ALLOWED_HOST_DEV')
 
 ALLOWED_HOSTS = [ALLOWED_HOST_1, ALLOWED_HOST_2, ALLOWED_HOST_DEV]
+
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # Application definition
 
@@ -61,7 +60,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'apps.api.apps.ApiConfig',
     'apps.mail.apps.MailConfig',
-    'apps.vkapi.apps.VkapiConfig',
 ]
 
 REST_FRAMEWORK = {
@@ -145,14 +143,6 @@ DATABASES = {
     }
 }
 
-# Читаем параметры приложения ВК для авторизации
-VK_CLIENT_ID = os.getenv('VK_CLIENT_ID', '123456')
-VK_CLIENT_SECRET = os.getenv('VK_CLIENT_SECRET', 'djangosecret123456')
-VK_REDIRECT_URI = os.getenv('http://0.0.0.0:1024/vkauth/callback/')
-VK_AUTH_URL = os.getenv('VK_AUTH_URL', 'https://oauth.vk.com/authorize')
-VK_TOKEN_URL = os.getenv('VK_TOKEN_URL', 'https://oauth.vk.com/access_token')
-VK_API_VERSION = os.getenv('VK_API_VERSION', '5.199')
-
 # Читаем USE_MAIL из .env
 USE_MAIL = os.getenv('USE_MAIL', 'False').lower() in ['true', '1', 'yes']
 
@@ -188,7 +178,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -211,7 +200,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 
@@ -228,22 +216,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'project.User'
 
-CORS_ALLOWED_SERVER=os.getenv('CORS_ALLOWED_SERVER')
-
-CORS_ALLOWED_ORIGINS = [
-    "http://" + ALLOWED_HOST_1 + ":1024",
-    "http://" + ALLOWED_HOST_2 + ":1024",
-    CORS_ALLOWED_SERVER
-]
-
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOW_METHODS = [
-    'GET', 'POST'
-]
-
-CORS_ALLOW_HEADERS = [
-    'content-type',
-    'authorization',
-    'Z-User-Token',
-]
