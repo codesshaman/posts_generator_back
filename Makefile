@@ -6,6 +6,7 @@ VENV=$(DIR)/$(VENV_DIR)
 VENV_BIN=$(VENV)/bin
 PYTHON=$(VENV_BIN)/python3
 PIP=$(VENV_BIN)/pip3
+GUNICORN=$(VENV_BIN)/gunicorn
 
 ifneq (,$(wildcard .env))
     include .env
@@ -20,7 +21,7 @@ WARN_COLOR=\033[33;01m	# Warning yellow
 
 all:
 	@printf "$(OK_COLOR)==== Starting the configuration ${name} ====$(NO_COLOR)\n"
-	$(PYTHON) manage.py runserver $(ALLOWED_HOST_1):$(ALLOWED_PORT)
+	$(GUNICORN) --bind $(ALLOWED_HOST):$(ALLOWED_PORT) project.wsgi:application
 
 app:
 	@printf "$(OK_COLOR)==== Creating a new application ====$(NO_COLOR)\n"
