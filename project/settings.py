@@ -38,10 +38,10 @@ DEBUG = os.getenv('DEBUG') == 'True'
 
 ALLOWED_HOST_1 = os.getenv('ALLOWED_HOST_1')
 ALLOWED_HOST_2 = os.getenv('ALLOWED_HOST_2')
-ALLOWED_HOST = os.getenv('ALLOWED_HOST')
+ALLOWED_BACK = os.getenv('ALLOWED_BACK')
 ALLOWED_FRONT = os.getenv('ALLOWED_FRONT')
 
-ALLOWED_HOSTS = [ALLOWED_HOST_1, ALLOWED_HOST_2, ALLOWED_HOST]
+ALLOWED_HOSTS = [ALLOWED_HOST_1, ALLOWED_HOST_2, ALLOWED_BACK]
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
@@ -201,19 +201,19 @@ USE_I18N = True
 
 USE_TZ = True
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://" + ALLOWED_FRONT, 
+    "https://" + ALLOWED_BACK
+]
+
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
+    BASE_DIR / "static",
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    ALLOWED_FRONT
-]
-
-STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
-
+STATIC_ROOT = BASE_DIR / "staticfiles"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 

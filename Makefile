@@ -21,7 +21,7 @@ WARN_COLOR=\033[33;01m	# Warning yellow
 
 all:
 	@printf "$(OK_COLOR)==== Starting the configuration ${name} ====$(NO_COLOR)\n"
-	$(GUNICORN) --bind $(ALLOWED_HOST):$(ALLOWED_PORT) project.wsgi:application
+	$(GUNICORN) --bind $(ALLOWED_HOST_1):$(ALLOWED_PORT) project.wsgi:application
 
 app:
 	@printf "$(OK_COLOR)==== Creating a new application ====$(NO_COLOR)\n"
